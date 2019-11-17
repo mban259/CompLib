@@ -24,6 +24,12 @@ namespace CompLib.Algorithm
             }
         }
 
+        /// <summary>
+        /// arrayを辞書順で次の順列にする 存在しないときはfalseを返す
+        /// </summary>
+        /// <param name="array"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static bool NextPermutation<T>(T[] array, Comparison<T> comparison)
         {
             for (int i = array.Length - 2; i >= 0; i--)
@@ -48,9 +54,21 @@ namespace CompLib.Algorithm
             return false;
         }
 
+        /// <summary>
+        /// arrayを辞書順で次の順列にする 存在しないときはfalseを返す
+        /// </summary>
+        /// <param name="array"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static bool NextPermutation<T>(T[] array, Comparer<T> comparer) =>
             NextPermutation(array, comparer.Compare);
 
+        /// <summary>
+        /// arrayを辞書順で次の順列にする 存在しないときはfalseを返す
+        /// </summary>
+        /// <param name="array"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static bool NextPermutation<T>(T[] array) => NextPermutation(array, Comparer<T>.Default);
     }
 }
