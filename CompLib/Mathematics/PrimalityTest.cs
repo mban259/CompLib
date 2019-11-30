@@ -6,7 +6,7 @@ namespace CompLib.Mathematics
         private static Random Random = new Random();
 
         /// <summary>
-        /// Miller-Rabin素数判定法を用いてnが素数か判定 O(k log n)
+        /// Miller-Rabin素数判定法を用いてnが素数か判定 O(k log^2 n)
         /// </summary>
         /// <param name="n"></param>
         /// <param name="k"></param>
