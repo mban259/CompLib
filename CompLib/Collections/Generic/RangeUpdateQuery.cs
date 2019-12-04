@@ -99,7 +99,6 @@ namespace CompLib.Collections.Generic
 
         public T this[int i]
         {
-            set { Update(i, i + 1, value); }
             get { return Get(i); }
         }
     }
