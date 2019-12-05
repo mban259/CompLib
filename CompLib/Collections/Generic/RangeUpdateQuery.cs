@@ -12,6 +12,11 @@ namespace CompLib.Collections.Generic
         private readonly T _identity;
         private readonly Func<T, T, T> _operation;
 
+        /// <summary>
+        /// 区間更新、点取得
+        /// </summary>
+        /// <param name="operation">更新用の演算</param>
+        /// <param name="identity">(T, operation)の左単位元</param>
         public RangeUpdateQuery(Func<T, T, T> operation, T identity)
         {
             _identity = identity;
