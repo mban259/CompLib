@@ -7,10 +7,16 @@ namespace CompLib.Collections.Generic
         // 制約に合った2の冪
         private const int N = 1 << 21;
         private T[] _array;
+        private readonly bool[] flag;
 
         private readonly T _identity;
         private readonly Func<T, T, T> _operation;
 
+        /// <summary>
+        /// 区間更新、点取得
+        /// </summary>
+        /// <param name="operation">更新用の演算</param>
+        /// <param name="identity">(T, operation)の左単位元</param>
         public RangeUpdateQuery(Func<T, T, T> operation, T identity)
         {
             _identity = identity;
@@ -20,20 +26,24 @@ namespace CompLib.Collections.Generic
             {
                 _array[i] = _identity;
             }
+
+            flag = new bool[N * 2];
         }
 
         private void Eval(int k, int l, int r)
         {
-            if (_array[k].Equals(_identity))
+            if (flag[k])
             {
-                return;
-            }
+                if (r - l > 1)
+                {
+                    _array[k * 2] = _operation(_array[k * 2], _array[k]);
+                    flag[k * 2] = true;
+                    _array[k * 2 + 1] = _operation(_array[k * 2 + 1], _array[k]);
+                    flag[k * 2 + 1] = true;
+                    _array[k] = _identity;
+                }
 
-            if (r - l > 1)
-            {
-                _array[k * 2] = _operation(_array[k * 2], _array[k]);
-                _array[k * 2 + 1] = _operation(_array[k * 2 + 1], _array[k]);
-                _array[k] = _identity;
+                flag[k] = false;
             }
         }
 
@@ -48,6 +58,7 @@ namespace CompLib.Collections.Generic
             if (left <= l && r <= right)
             {
                 _array[k] = _operation(_array[k], item);
+                flag[k] = true;
                 Eval(k, l, r);
                 return;
             }
@@ -99,7 +110,6 @@ namespace CompLib.Collections.Generic
 
         public T this[int i]
         {
-            set { Update(i, i + 1, value); }
             get { return Get(i); }
         }
     }

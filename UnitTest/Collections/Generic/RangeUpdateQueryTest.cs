@@ -45,6 +45,12 @@ namespace UnitTest.Collections.Generic
                         break;
                 }
             }
+
+            st.Update(0, N, 0);
+            for (int i = 0; i < N; i++)
+            {
+                Assert.AreEqual(0, st[i]);
+            }
         }
     }
 }
