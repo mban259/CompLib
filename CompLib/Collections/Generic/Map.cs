@@ -48,7 +48,7 @@ namespace CompLib.Collections.Generic
                 }
                 else
                 {
-                    k += (p.Left?.Count ?? 0) + 1;
+                    k += p.LeftCount() + 1;
                     p = p.Right;
                 }
             }
@@ -72,7 +72,7 @@ namespace CompLib.Collections.Generic
                 }
                 else
                 {
-                    k += (p.Left?.Count ?? 0) + 1;
+                    k += p.LeftCount() + 1;
                     p = p.Right;
                 }
             }
@@ -80,7 +80,7 @@ namespace CompLib.Collections.Generic
 
         private Node Find(Node t, int i)
         {
-            int left = t.Left?.Count ?? 0;
+            int left = t.LeftCount();
             if (i < left)
             {
                 return Find(t.Left, i);
@@ -314,9 +314,15 @@ namespace CompLib.Collections.Generic
 
             public int Count { get; private set; }
 
+            // leftの部分木の大きさ
+            public int LeftCount()
+            {
+                return Left?.Count ?? 0;
+            }
+
             public void Update()
             {
-                Count = (Left?.Count ?? 0) + 1 + (Right?.Count ?? 0);
+                Count = LeftCount() + 1 + (Right?.Count ?? 0);
             }
 
             public Node(TKey key, TValue value, int rank)
