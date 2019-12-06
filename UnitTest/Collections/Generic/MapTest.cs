@@ -31,7 +31,7 @@ namespace UnitTest.Collections.Generic
                     case 1:
                     {
                         bool f1 = dictionary.Remove(key);
-                        bool f2 = map.Erase(key);
+                        bool f2 = map.Remove(key);
                         Assert.AreEqual(f1, f2);
                     }
                         break;
@@ -178,6 +178,66 @@ namespace UnitTest.Collections.Generic
             {
                 kv[i] = new KeyValuePair<int, int>(keyArray[i], rnd.Next());
             }
+        }
+
+        [TestMethod]
+        public void RemoveTest()
+        {
+            var rnd = new Random();
+            var map = new Map<int, int>();
+            var dictionary = new Dictionary<int, int>();
+            for (int i = 0; i < 10000; i++)
+            {
+                int type = rnd.Next(3);
+                int k = rnd.Next(100);
+                int v = rnd.Next();
+                int left = rnd.Next(dictionary.Count);
+                int right = rnd.Next(left, dictionary.Count);
+                switch (type)
+                {
+                    // 更新
+                    case 0:
+                    {
+                        map[k] = v;
+                        dictionary[k] = v;
+                    }
+                        break;
+                    // 範囲削除
+                    case 1:
+                    {
+                        var newDic = new Dictionary<int, int>();
+                        var array = dictionary.ToArray();
+                        Array.Sort(array, (a, b) => a.Key.CompareTo(b.Key));
+                        for (int j = 0; j < left; j++)
+                        {
+                            newDic[array[j].Key] = array[j].Value;
+                        }
+
+                        for (int j = right; j < array.Length; j++)
+                        {
+                            newDic[array[j].Key] = array[j].Value;
+                        }
+
+                        dictionary = newDic;
+                        map.RemoveRange(left,right);
+                    }
+                        break;
+                    
+                    // 取得
+                    case 2:
+                    {
+                        int o;
+                        Assert.AreEqual(dictionary.TryGetValue(k, out o), map.ContainsKey(k));
+                        Assert.AreEqual(o, map[k]);
+                    }
+                        break;
+                }
+
+                Assert.AreEqual(dictionary.Count, map.Count);
+            }
+
+            map.RemoveRange(0, map.Count);
+            Assert.AreEqual(0, map.Count);
         }
     }
 }
