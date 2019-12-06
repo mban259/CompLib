@@ -219,7 +219,7 @@ namespace CompLib.Collections.Generic
             t?.Update();
         }
 
-        private bool Erase(ref Node t, TKey key)
+        private bool Remove(ref Node t, TKey key)
         {
             if (t == null)
             {
@@ -233,7 +233,7 @@ namespace CompLib.Collections.Generic
             }
             else
             {
-                bool f = _comparison(key, t.Key) < 0 ? Erase(ref t.Left, key) : Erase(ref t.Right, key);
+                bool f = _comparison(key, t.Key) < 0 ? Remove(ref t.Left, key) : Remove(ref t.Right, key);
                 t.Update();
                 return f;
             }
@@ -244,9 +244,9 @@ namespace CompLib.Collections.Generic
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool Erase(TKey key)
+        public bool Remove(TKey key)
         {
-            return Erase(ref _root, key);
+            return Remove(ref _root, key);
         }
 
         // 根がtの部分木の[left,right)を削除

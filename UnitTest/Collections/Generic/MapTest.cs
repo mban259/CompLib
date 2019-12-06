@@ -31,7 +31,7 @@ namespace UnitTest.Collections.Generic
                     case 1:
                     {
                         bool f1 = dictionary.Remove(key);
-                        bool f2 = map.Erase(key);
+                        bool f2 = map.Remove(key);
                         Assert.AreEqual(f1, f2);
                     }
                         break;
