@@ -249,6 +249,54 @@ namespace CompLib.Collections.Generic
             return Erase(ref _root, key);
         }
 
+        // 根がtの部分木の[left,right)を削除
+        private void RemoveRange(ref Node t, int left, int right)
+        {
+            if (t == null || right - left == 0) return;
+            if (left <= t.LeftCount() && t.LeftCount() < right)
+            {
+                if (left == 0 && t.Count <= right)
+                {
+                    t = null;
+                    return;
+                }
+
+                // t.Left.Countが変わるのでRightが先
+                RemoveRange(ref t.Right, 0, right - t.LeftCount() - 1);
+                RemoveRange(ref t.Left, left, t.LeftCount());
+                Merge(out t, t.Left, t.Right);
+            }
+            else if (right <= t.LeftCount())
+            {
+                RemoveRange(ref t.Left, left, right);
+            }
+            else
+            {
+                RemoveRange(ref t.Right, left - t.LeftCount() - 1, right - t.LeftCount() - 1);
+            }
+
+            t?.Update();
+        }
+
+        /// <summary>
+        /// [begin, end)を削除
+        /// </summary>
+        /// <param name="begin"></param>
+        /// <param name="end"></param>
+        public void RemoveRange(int begin, int end)
+        {
+            RemoveRange(ref _root, Math.Max(0, begin), Math.Min(Count, end));
+        }
+
+        /// <summary>
+        /// i番目を削除
+        /// </summary>
+        /// <param name="i"></param>
+        public void RemoveAt(int i)
+        {
+            RemoveRange(i, i + 1);
+        }
+
         // キーがkeyのノードがあるか
         private bool ContainsKey(TKey key, out Node n)
         {
