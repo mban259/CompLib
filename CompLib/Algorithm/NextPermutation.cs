@@ -3,7 +3,7 @@ namespace CompLib.Algorithm
 {
     using System;
     using System.Collections.Generic;
-    public static class Algorithm
+    public static partial class Algorithm
     {
         private static void Swap<T>(ref T a, ref T b)
         {
