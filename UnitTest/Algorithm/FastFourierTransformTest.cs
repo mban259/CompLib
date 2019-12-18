@@ -9,7 +9,7 @@ namespace UnitTest.Algorithm
     [TestClass]
     public class FastFourierTransformTest
     {
-        private const int MaxN = 10000;
+        private const int MaxN = 100;
         private const int MaxA = 100;
         private static long[] A, B, C;
 
@@ -73,9 +73,10 @@ namespace UnitTest.Algorithm
             {
                 sb.AppendLine($"{expected[i]} {c[i]}");
             }
+
             for (int i = 0; i < expected.Length; i++)
             {
-                Assert.AreEqual(expected[i], c[i],sb.ToString());
+                Assert.AreEqual(expected[i], c[i], sb.ToString());
             }
         }
 
@@ -86,9 +87,9 @@ namespace UnitTest.Algorithm
             Complex[] a = new Complex[16];
             for (int i = 0; i < 16; i++)
             {
-                a[i] = new Complex(rnd.Next(10),rnd.Next(10));
+                a[i] = new Complex(rnd.Next(10), rnd.Next(10));
             }
-            
+
             var dft = DFT(a, false);
             var fft = FastFourierTransform.DiscreteFourierTransform(a);
 
@@ -122,10 +123,34 @@ namespace UnitTest.Algorithm
             Assert.AreEqual(DFTD.Length, fft.Length);
             for (int i = 0; i < DFTD.Length; i++)
             {
-                bool re = Math.Abs(DFTD[i].Real - fft[i].Real) < 0.000000001;
-                bool im = Math.Abs(DFTD[i].Real - fft[i].Real) < 0.000000001;
+                bool re = Math.Abs(DFTD[i].Real - fft[i].Real) < 1;
+                bool im = Math.Abs(DFTD[i].Imaginary - fft[i].Imaginary) < 1;
                 Assert.IsTrue(re && im, $"{DFTD[i]} {fft[i]}");
             }
+        }
+
+        [TestMethod]
+        public void ZTest()
+        {
+            // 1521 ^ (2^50) = 1 (mod ModInt.Mod)
+            var zetaN = FastFourierTransform.Z[50];
+            Assert.AreEqual(1521, zetaN);
+            FastFourierTransform.ModInt zetaNi = zetaN;
+            for (int i = 0; i < 50; i++)
+            {
+                zetaNi *= zetaNi;
+            }
+
+            Assert.AreEqual(1, zetaNi._num);
+
+            zetaN = FastFourierTransform.Z[3];
+            zetaNi = 1;
+            for (int i = 0; i < 8; i++)
+            {
+                zetaNi *= zetaN;
+            }
+
+            Assert.AreEqual(1, zetaNi._num);
         }
 
         private static Complex Zeta(int n)

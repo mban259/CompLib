@@ -15,8 +15,8 @@ namespace CompLib.Algorithm
         private const long Mod = 1012 * N + 1;
 
         // Z[i] 1の原始2^i乗根
-        private static readonly ModInt[] Z;
-        private static readonly ModInt[] InvZ;
+        public static readonly ModInt[] Z;
+        public static readonly ModInt[] InvZ;
 
         static FastFourierTransform()
         {
@@ -222,7 +222,7 @@ namespace CompLib.Algorithm
             return new Complex(re, im);
         }
 
-        struct ModInt
+        public struct ModInt
         {
             public long _num { get; private set; }
 
@@ -239,7 +239,7 @@ namespace CompLib.Algorithm
             public static ModInt operator *(ModInt a, ModInt b)
             {
                 long bb = b._num;
-                ModInt result = 1;
+                ModInt result = 0;
                 while (bb > 0)
                 {
                     if (bb % 2 == 1)
@@ -256,7 +256,7 @@ namespace CompLib.Algorithm
 
             public static ModInt operator +(ModInt a, ModInt b)
             {
-                return (a._num + b._num);
+                return (a._num + b._num) % Mod;
             }
 
             // a^(2^b)
