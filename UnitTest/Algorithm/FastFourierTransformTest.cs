@@ -9,8 +9,8 @@ namespace UnitTest.Algorithm
     [TestClass]
     public class FastFourierTransformTest
     {
-        private const int MaxN = 100;
-        private const int MaxA = 100;
+        private const int MaxN = 10000;
+        private const int MaxA = 1000000;
         private static long[] A, B, C;
 
         public static Complex[] D;
