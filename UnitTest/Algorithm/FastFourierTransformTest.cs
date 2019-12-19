@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-using System.Text;
 using CompLib.Algorithm;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -11,10 +10,10 @@ namespace UnitTest.Algorithm
     {
         private const int MaxN = 10000;
         private const int MaxA = 1000000;
-        private static long[] A, B, C;
+        private static long[] _a, _b, _c;
 
         public static Complex[] D;
-        public static Complex[] DFTD;
+        public static Complex[] HatD;
 
         [ClassInitialize]
         public static void RandomTestInitialize(TestContext context)
@@ -22,19 +21,19 @@ namespace UnitTest.Algorithm
             var rnd = new Random();
             int n = rnd.Next(1, MaxN + 1);
             int m = rnd.Next(1, MaxN + 1);
-            A = new long[n];
+            _a = new long[n];
             for (int i = 0; i < n; i++)
             {
-                A[i] = rnd.Next(MaxA);
+                _a[i] = rnd.Next(MaxA);
             }
 
-            B = new long[m];
+            _b = new long[m];
             for (int i = 0; i < m; i++)
             {
-                B[i] = rnd.Next(MaxA);
+                _b[i] = rnd.Next(MaxA);
             }
 
-            C = new long[n + m - 1];
+            _c = new long[n + m - 1];
 
             for (int k = 0; k < n + m - 1; k++)
             {
@@ -43,7 +42,7 @@ namespace UnitTest.Algorithm
                     int j = k - i;
                     if (i < n && j < m)
                     {
-                        C[k] += A[i] * B[j];
+                        _c[k] += _a[i] * _b[j];
                     }
                 }
             }
@@ -55,7 +54,7 @@ namespace UnitTest.Algorithm
                 D[i] = new Complex(rnd.Next(MaxA), rnd.Next(MaxA));
             }
 
-            DFTD = FastFourierTransformTest.DFT(D, false);
+            HatD = FastFourierTransformTest.Transform(D, false);
         }
 
         [TestMethod]
@@ -78,12 +77,12 @@ namespace UnitTest.Algorithm
         [TestMethod]
         public void Test2()
         {
-            long[] fft = FastFourierTransform.Multiplication(A, B);
+            long[] fft = FastFourierTransform.Multiplication(_a, _b);
 
-            Assert.IsTrue(C.Length <= fft.Length);
-            for (int i = 0; i < C.Length; i++)
+            Assert.IsTrue(_c.Length <= fft.Length);
+            for (int i = 0; i < _c.Length; i++)
             {
-                Assert.AreEqual(C[i], fft[i]);
+                Assert.AreEqual(_c[i], fft[i]);
             }
         }
 
@@ -92,14 +91,15 @@ namespace UnitTest.Algorithm
         {
             // かなりガバガバテスト
             Complex[] fft = FastFourierTransform.DiscreteFourierTransform(D);
-            Assert.AreEqual(DFTD.Length, fft.Length);
-            for (int i = 0; i < DFTD.Length; i++)
+            Assert.AreEqual(HatD.Length, fft.Length);
+            for (int i = 0; i < HatD.Length; i++)
             {
-                double reDiff = (fft[i].Real - DFTD[i].Real) / DFTD[i].Real;
+                double reDiff = (fft[i].Real - HatD[i].Real) / HatD[i].Real;
                 bool re = -0.1 < reDiff && reDiff < 0.1;
 
-                double imDiff = (fft[i].Imaginary - DFTD[i].Imaginary) / DFTD[i].Imaginary;
+                double imDiff = (fft[i].Imaginary - HatD[i].Imaginary) / HatD[i].Imaginary;
                 bool im = -0.1 < imDiff && imDiff < 0.1;
+                Assert.IsTrue(re && im);
             }
         }
 
@@ -211,7 +211,7 @@ namespace UnitTest.Algorithm
             return new Complex(re, im);
         }
 
-        private static Complex[] DFT(Complex[] a, bool inv)
+        private static Complex[] Transform(Complex[] a, bool inv)
         {
             int n = 1;
             while (n < a.Length)

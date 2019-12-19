@@ -57,27 +57,27 @@ namespace CompLib.Algorithm
                 len *= 2;
             }
 
-            var MA = new ModInt[len];
+            var mA = new ModInt[len];
             for (int i = 0; i < a.Length; i++)
             {
-                MA[i] = a[i];
+                mA[i] = a[i];
             }
 
-            var MB = new ModInt[len];
+            var mB = new ModInt[len];
             for (int i = 0; i < b.Length; i++)
             {
-                MB[i] = b[i];
+                mB[i] = b[i];
             }
 
-            ModInt[] hatG = FFT(MA, l, false);
-            ModInt[] hatH = FFT(MB, l, false);
-            ModInt[] hatGH = new ModInt[len];
+            ModInt[] hatG = Transform(mA, l, false);
+            ModInt[] hatH = Transform(mB, l, false);
+            ModInt[] hatF = new ModInt[len];
             for (int i = 0; i < len; i++)
             {
-                hatGH[i] = hatG[i] * hatH[i];
+                hatF[i] = hatG[i] * hatH[i];
             }
 
-            ModInt[] nF = FFT(hatGH, l, true);
+            ModInt[] nF = Transform(hatF, l, true);
 
             ModInt invLen = ModInt.Pow(len, Mod - 2);
             long[] f = new long[len];
@@ -89,7 +89,7 @@ namespace CompLib.Algorithm
             return f;
         }
 
-        private static ModInt[] FFT(ModInt[] a, int l, bool inverse)
+        private static ModInt[] Transform(ModInt[] a, int l, bool inverse)
         {
             int len = 1 << l;
             if (len == 1)
@@ -106,8 +106,8 @@ namespace CompLib.Algorithm
                 a1[i] = a[i * 2 + 1];
             }
 
-            ModInt[] hatF0 = FFT(a0, l - 1, inverse);
-            ModInt[] hatF1 = FFT(a1, l - 1, inverse);
+            ModInt[] hatF0 = Transform(a0, l - 1, inverse);
+            ModInt[] hatF1 = Transform(a1, l - 1, inverse);
 
             ModInt zetaN = inverse ? InvZ[l] : Z[l];
 
@@ -148,15 +148,15 @@ namespace CompLib.Algorithm
                 compB[i] = new Complex(b[i], 0);
             }
 
-            Complex[] hatG = FFT(compA);
-            Complex[] hatH = FFT(compB);
-            Complex[] hatGH = new Complex[n];
+            Complex[] hatG = Transform(compA);
+            Complex[] hatH = Transform(compB);
+            Complex[] hatF = new Complex[n];
             for (int i = 0; i < n; i++)
             {
-                hatGH[i] = hatG[i] * hatH[i];
+                hatF[i] = hatG[i] * hatH[i];
             }
 
-            Complex[] nF = FFT(hatGH, true);
+            Complex[] nF = Transform(hatF, true);
 
             double[] f = new double[n];
             for (int i = 0; i < n; i++)
@@ -181,12 +181,12 @@ namespace CompLib.Algorithm
                 aa[i] = a[i];
             }
 
-            return FFT(aa, inverse);
+            return Transform(aa, inverse);
         }
 
         // f(x) = Σa_i*x^i の離散フーリエ変換
         // deg(f)は2羃
-        private static Complex[] FFT(Complex[] a, bool inverse = false)
+        private static Complex[] Transform(Complex[] a, bool inverse = false)
         {
             int n = a.Length;
             if (n == 1)
@@ -202,8 +202,8 @@ namespace CompLib.Algorithm
                 a1[i] = a[2 * i + 1];
             }
 
-            Complex[] hatF0 = FFT(a0, inverse);
-            Complex[] hatF1 = FFT(a1, inverse);
+            Complex[] hatF0 = Transform(a0, inverse);
+            Complex[] hatF1 = Transform(a1, inverse);
 
             // ζ_n
             Complex zetaN = Zeta(inverse ? -n : n);
