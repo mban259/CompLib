@@ -130,27 +130,103 @@ namespace UnitTest.Algorithm
         }
 
         [TestMethod]
-        public void ZTest()
+        public void ZTest1()
         {
-            // 1521 ^ (2^50) = 1 (mod ModInt.Mod)
-            var zetaN = FastFourierTransform.Z[50];
-            Assert.AreEqual(1521, zetaN);
-            FastFourierTransform.ModInt zetaNi = zetaN;
-            for (int i = 0; i < 50; i++)
+            // ζ_n^i = ζ_n^i ⇔ i = j mod n
+
+            int n = 32;
+            var zetaN = FastFourierTransform.Z[5];
+
+            var zetaNi = new FastFourierTransform.ModInt[2 * n];
+            zetaNi[0] = 1;
+            for (int i = 1; i < 2 * n; i++)
             {
-                zetaNi *= zetaNi;
+                zetaNi[i] = zetaNi[i - 1] * zetaN;
             }
 
-            Assert.AreEqual(1, zetaNi._num);
-
-            zetaN = FastFourierTransform.Z[3];
-            zetaNi = 1;
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < n; i++)
             {
-                zetaNi *= zetaN;
+                Assert.AreEqual(zetaNi[i]._num, zetaNi[i + n]._num);
             }
 
-            Assert.AreEqual(1, zetaNi._num);
+            var invZetaN = FastFourierTransform.InvZ[4];
+            var invZetaNi = new FastFourierTransform.ModInt[2 * n];
+            invZetaNi[0] = 1;
+            for (int i = 1; i < 2 * n; i++)
+            {
+                invZetaNi[i] = invZetaNi[i - 1] * invZetaN;
+            }
+
+            for (int i = 0; i < n; i++)
+            {
+                Assert.AreEqual(invZetaNi[i]._num, invZetaNi[i + n]);
+            }
+        }
+
+        [TestMethod]
+        public void ZTest2()
+        {
+            int n = 32;
+            var zetaN = FastFourierTransform.Z[5];
+            var invZetaN = FastFourierTransform.InvZ[5];
+            var zetaNt = new FastFourierTransform.ModInt[n];
+            var invZetaNt = new FastFourierTransform.ModInt[n];
+            zetaNt[0] = 1;
+            invZetaNt[0] = 1;
+            for (int i = 1; i < n; i++)
+            {
+                zetaNt[i] = zetaNt[i - 1] * zetaN;
+                invZetaNt[i] = invZetaNt[i - 1] * invZetaN;
+            }
+
+            for (int j = 0; j < n; j++)
+            {
+                var zetaNj = zetaNt[j];
+                for (int k = 0; k < n; k++)
+                {
+                    var barZetaNk = invZetaNt[k];
+
+                    FastFourierTransform.ModInt sum = 0;
+                    for (int i = 0; i < n; i++)
+                    {
+                        FastFourierTransform.ModInt zetaNji = 1;
+                        FastFourierTransform.ModInt barZetaNki = 1;
+                        for (int l = 0; l < i; l++)
+                        {
+                            zetaNji *= zetaNj;
+                            barZetaNki *= barZetaNk;
+                        }
+
+                        sum += zetaNji * barZetaNki;
+                    }
+
+                    Assert.AreEqual(j == k ? n : 0, sum._num);
+                }
+            }
+
+            for (int j = 0; j < n; j++)
+            {
+                var invZetaNj = invZetaNt[j];
+                for (int k = 0; k < n; k++)
+                {
+                    var invBarZetaNk = zetaNt[k];
+                    FastFourierTransform.ModInt sum = 0;
+                    for (int i = 0; i < n; i++)
+                    {
+                        FastFourierTransform.ModInt invZetaNji = 1;
+                        FastFourierTransform.ModInt invBarZetaNki = 1;
+                        for (int l = 0; l < i; l++)
+                        {
+                            invZetaNji *= invZetaNj;
+                            invBarZetaNki *= invBarZetaNk;
+                        }
+
+                        sum += invZetaNji * invBarZetaNki;
+                    }
+
+                    Assert.AreEqual(j == k ? n : 0, sum._num);
+                }
+            }
         }
 
         private static Complex Zeta(int n)
