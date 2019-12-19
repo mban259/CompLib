@@ -245,6 +245,11 @@ namespace CompLib.Algorithm
 
             public static ModInt operator *(ModInt a, ModInt b)
             {
+                if (Mod < int.MaxValue)
+                {
+                    return (a._num * b._num) % Mod;
+                }
+
                 long bb = b._num;
                 ModInt result = 0;
                 while (bb > 0)
