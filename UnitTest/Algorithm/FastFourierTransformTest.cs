@@ -76,7 +76,7 @@ namespace UnitTest.Algorithm
         }
 
         [TestMethod]
-        public void Test3()
+        public void Test2()
         {
             long[] fft = FastFourierTransform.Multiplication(A, B);
 
@@ -88,7 +88,7 @@ namespace UnitTest.Algorithm
         }
 
         [TestMethod]
-        public void Test4()
+        public void ComplexTest1()
         {
             // かなりガバガバテスト
             Complex[] fft = FastFourierTransform.DiscreteFourierTransform(D);
