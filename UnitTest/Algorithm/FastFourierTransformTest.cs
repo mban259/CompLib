@@ -43,7 +43,7 @@ namespace UnitTest.Algorithm
                     int j = k - i;
                     if (i < n && j < m)
                     {
-                        C[k] = A[i] * B[j];
+                        C[k] += A[i] * B[j];
                     }
                 }
             }
@@ -68,15 +68,10 @@ namespace UnitTest.Algorithm
             var c = FastFourierTransform.Multiplication(a, b);
 
             Assert.AreEqual(expected.Length, c.Length);
-            var sb = new StringBuilder();
-            for (int i = 0; i < expected.Length; i++)
-            {
-                sb.AppendLine($"{expected[i]} {c[i]}");
-            }
 
             for (int i = 0; i < expected.Length; i++)
             {
-                Assert.AreEqual(expected[i], c[i], sb.ToString());
+                Assert.AreEqual(expected[i], c[i]);
             }
         }
 
@@ -112,7 +107,7 @@ namespace UnitTest.Algorithm
             Assert.IsTrue(C.Length <= fft.Length);
             for (int i = 0; i < C.Length; i++)
             {
-                Assert.AreEqual(C[i], fft[i], $"{i}");
+                Assert.AreEqual(C[i], fft[i]);
             }
         }
 
