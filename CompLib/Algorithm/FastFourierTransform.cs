@@ -1,8 +1,7 @@
-using System;
-using System.Numerics;
-
 namespace CompLib.Algorithm
 {
+    using System;
+    using System.Numerics;
     public static class FastFourierTransform
     {
         private const int E = 50;
