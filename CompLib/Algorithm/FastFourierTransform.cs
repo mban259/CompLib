@@ -42,7 +42,6 @@ namespace CompLib.Algorithm
         // 整数論ばんざい
         /// <summary>
         /// a,bからc[k]=Σ(a[i]*b[k-i])を求める
-        /// c[k] < Mod
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
