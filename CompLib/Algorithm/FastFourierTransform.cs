@@ -38,8 +38,6 @@ namespace CompLib.Algorithm
             }
         }
 
-        // ふぁっきん小数点誤差なのでmodint
-        // 整数論ばんざい
         /// <summary>
         /// a,bからc[k]=Σ(a[i]*b[k-i])を求める
         /// </summary>
