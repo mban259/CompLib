@@ -114,13 +114,16 @@ namespace UnitTest.Algorithm
         [TestMethod]
         public void Test4()
         {
+            // かなりガバガバテスト
             Complex[] fft = FastFourierTransform.DiscreteFourierTransform(D);
             Assert.AreEqual(DFTD.Length, fft.Length);
             for (int i = 0; i < DFTD.Length; i++)
             {
-                bool re = Math.Abs(DFTD[i].Real - fft[i].Real) < 1;
-                bool im = Math.Abs(DFTD[i].Imaginary - fft[i].Imaginary) < 1;
-                Assert.IsTrue(re && im, $"{DFTD[i]} {fft[i]}");
+                double reDiff = (fft[i].Real - DFTD[i].Real) / DFTD[i].Real;
+                bool re = -0.1 < reDiff && reDiff < 0.1;
+
+                double imDiff = (fft[i].Imaginary - DFTD[i].Imaginary) / DFTD[i].Imaginary;
+                bool im = -0.1 < imDiff && imDiff < 0.1;
             }
         }
 
