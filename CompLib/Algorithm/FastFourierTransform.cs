@@ -14,6 +14,13 @@ namespace CompLib.Algorithm
 
         private const long Mod = 1012 * N + 1;
 
+        // private const int E = 27;
+        // private const long N = 1L << E;
+        // private const long O = 137;
+        // private const long InvO = 749463956;
+        // private const long Mod = 15 * N + 1;
+
+
         // Z[i] 1の原始2^i乗根
         public static readonly ModInt[] Z;
         public static readonly ModInt[] InvZ;
