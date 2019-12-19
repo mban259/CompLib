@@ -76,30 +76,6 @@ namespace UnitTest.Algorithm
         }
 
         [TestMethod]
-        public void Test2()
-        {
-            var rnd = new Random();
-            Complex[] a = new Complex[16];
-            for (int i = 0; i < 16; i++)
-            {
-                a[i] = new Complex(rnd.Next(10), rnd.Next(10));
-            }
-
-            var dft = DFT(a, false);
-            var fft = FastFourierTransform.DiscreteFourierTransform(a);
-
-            Assert.AreEqual(dft.Length, fft.Length);
-
-            for (int i = 0; i < 8; i++)
-            {
-                bool re = Math.Abs(dft[i].Real - fft[i].Real) < 0.000000001;
-                bool im = Math.Abs(dft[i].Real - fft[i].Real) < 0.000000001;
-                Assert.IsTrue(re && im);
-            }
-        }
-
-
-        [TestMethod]
         public void Test3()
         {
             long[] fft = FastFourierTransform.Multiplication(A, B);
