@@ -64,7 +64,7 @@ namespace UnitTest.Algorithm
             long[] b = {0, 1, 2, 4, 8, 0, 0, 0};
 
             long[] expected = new long[] {0, 0, 1, 4, 11, 26, 36, 40, 32, 0, 0, 0, 0, 0, 0, 0};
-            var c = FastFourierTransform.Multiplication(a, b);
+            var c = FastFourierTransform.Convolution(a, b);
 
             Assert.AreEqual(expected.Length, c.Length);
 
@@ -77,7 +77,7 @@ namespace UnitTest.Algorithm
         [TestMethod]
         public void Test2()
         {
-            long[] fft = FastFourierTransform.Multiplication(_a, _b);
+            long[] fft = FastFourierTransform.Convolution(_a, _b);
 
             Assert.IsTrue(_c.Length <= fft.Length);
             for (int i = 0; i < _c.Length; i++)

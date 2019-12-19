@@ -44,7 +44,7 @@ namespace CompLib.Algorithm
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static long[] Multiplication(long[] a, long[] b)
+        public static long[] Convolution(long[] a, long[] b)
         {
             int len = 1;
             int l = 0;
@@ -125,7 +125,7 @@ namespace CompLib.Algorithm
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static double[] Multiplication(double[] a, double[] b)
+        public static double[] Convolution(double[] a, double[] b)
         {
             int n = 1;
             while (n < (a.Length + b.Length))
