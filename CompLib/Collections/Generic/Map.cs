@@ -331,6 +331,7 @@ namespace CompLib.Collections.Generic
         /// <returns></returns>
         public bool ContainsKey(TKey key)
         {
+            Node _;
             return ContainsKey(key, out _);
         }
 
