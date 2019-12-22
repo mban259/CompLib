@@ -16,16 +16,28 @@ namespace CompLib.Collections.Generic
 
         private Random _random;
 
+        /// <summary>
+        /// 連想配列
+        /// </summary>
+        /// <param name="comparison">keyの比較 狭義弱順序</param>
         public Map(Comparison<TKey> comparison)
         {
             _random = new Random();
             _comparison = comparison;
         }
 
+        /// <summary>
+        /// 連想配列
+        /// </summary>
+        /// <param name="comparison">keyの比較 狭義弱順序</param>
         public Map(IComparer<TKey> comparer) : this(comparer.Compare)
         {
         }
 
+        
+        /// <summary>
+        /// 連想配列
+        /// </summary>
         public Map() : this(Comparer<TKey>.Default)
         {
         }
