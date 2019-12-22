@@ -238,7 +238,7 @@ namespace CompLib.Collections.Generic
                 return false;
             }
 
-            if (key.Equals(t.Key))
+            if(_comparison(key,t.Key) == 0)
             {
                 Merge(out t, t.Left, t.Right);
                 return true;
@@ -326,7 +326,7 @@ namespace CompLib.Collections.Generic
                 }
                 else
                 {
-                    if (key.Equals(n.Key))
+                    if(_comparison(key,n.Key) == 0)
                     {
                         return true;
                     }
