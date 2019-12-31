@@ -120,7 +120,7 @@ namespace UnitTest.Algorithm
 
             for (int i = 0; i < n; i++)
             {
-                Assert.AreEqual(zetaNi[i]._num, zetaNi[i + n]._num);
+                Assert.AreEqual(zetaNi[i].Num, zetaNi[i + n].Num);
             }
 
             var invZetaN = FastFourierTransform.InvZ[4];
@@ -133,7 +133,7 @@ namespace UnitTest.Algorithm
 
             for (int i = 0; i < n; i++)
             {
-                Assert.AreEqual(invZetaNi[i]._num, invZetaNi[i + n]);
+                Assert.AreEqual(invZetaNi[i].Num, invZetaNi[i + n]);
             }
         }
 
@@ -174,7 +174,7 @@ namespace UnitTest.Algorithm
                         sum += zetaNji * barZetaNki;
                     }
 
-                    Assert.AreEqual(j == k ? n : 0, sum._num);
+                    Assert.AreEqual(j == k ? n : 0, sum.Num);
                 }
             }
 
@@ -198,7 +198,7 @@ namespace UnitTest.Algorithm
                         sum += invZetaNji * invBarZetaNki;
                     }
 
-                    Assert.AreEqual(j == k ? n : 0, sum._num);
+                    Assert.AreEqual(j == k ? n : 0, sum.Num);
                 }
             }
         }
