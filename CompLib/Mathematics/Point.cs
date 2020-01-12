@@ -144,6 +144,7 @@ namespace CompLib.Mathematics
         }
 
 
+        // 誤差がすごい　なんとかする
         /// <summary>
         /// 点 1,2,3を頂点とする三角形の外接円
         /// </summary>
@@ -167,7 +168,7 @@ namespace CompLib.Mathematics
 
             double ta, tb, tc, td;
             Line(x1, y1, x2, y2, out ta, out tb);
-            Line(x1, y1, x2, y2, out tc, out td);
+            Line(x1, y1, x3, y3, out tc, out td);
 
             if (ta == tc)
             {

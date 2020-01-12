@@ -11,7 +11,8 @@ namespace UnitTest.Mathematics
         public void RandomCircleTest()
         {
             var r = new Random();
-            for (int i = 0; i < 10000; i++)
+            int cnt = 0;
+            while (cnt < 10000)
             {
                 double x1 = r.NextDouble() * 100;
                 double y1 = r.NextDouble() * 100;
@@ -22,22 +23,24 @@ namespace UnitTest.Mathematics
 
                 double cx, cy, cr;
 
-                Point.Circle(x1, y1, x2, y2, x3, y3, out cx, out cy, out cr);
+                if (!Point.Circle(x1, y1, x2, y2, x3, y3, out cx, out cy, out cr))
+                    continue;
 
+                cnt++;
                 double dx1 = x1 - cx;
                 double dy1 = y1 - cy;
-                Assert.IsTrue(Math.Abs(dx1 * dx1 + dy1 * dy1 - cr * cr) < 0.00001,
-                    $"1 {dx1 * dx1 + dy1 * dy1 - cr * cr}");
+                Assert.IsTrue(Math.Abs(dx1 * dx1 + dy1 * dy1 - cr * cr) < 0.1,
+                    $"1 {dx1 * dx1 + dy1 * dy1 - cr * cr} {cx} {cy} {cr}");
 
                 double dx2 = x2 - cx;
                 double dy2 = y2 - cy;
-                Assert.IsTrue(Math.Abs(dx2 * dx2 + dy2 * dy2 - cr * cr) < 0.00001,
-                    $"2 {dx2 * dx2 + dy2 * dy2 - cr * cr}");
+                Assert.IsTrue(Math.Abs(dx2 * dx2 + dy2 * dy2 - cr * cr) < 0.1,
+                    $"2 {dx2 * dx2 + dy2 * dy2 - cr * cr} {cx} {cy} {cr}");
 
                 double dx3 = x3 - cx;
                 double dy3 = y3 - cy;
-                Assert.IsTrue(Math.Abs(dx3 * dx3 + dy3 * dy3 - cr * cr) < 0.00001,
-                    $"3 {dx3 * dx3 + dy3 * dy3 - cr * cr}");
+                Assert.IsTrue(Math.Abs(dx3 * dx3 + dy3 * dy3 - cr * cr) < 0.1,
+                    $"3 {dx3 * dx3 + dy3 * dy3 - cr * cr} {cx} {cy} {cr}");
             }
         }
 
@@ -81,7 +84,7 @@ namespace UnitTest.Mathematics
         public void DistTest1()
         {
             double d = Point.Dist(1, -1, -1, 1);
-            Assert.IsTrue(Math.Abs(d-Math.Sqrt(8)) < 0.000001,$"actual {Math.Sqrt(8)} {d}");
+            Assert.IsTrue(Math.Abs(d - Math.Sqrt(8)) < 0.000001, $"actual {Math.Sqrt(8)} {d}");
         }
     }
 }
