@@ -15,6 +15,26 @@ namespace CompLib.Mathematics
         }
 
 
+        /// <summary>
+        /// 線分 a-b
+        /// </summary>
+        public struct Segment
+        {
+            public readonly P A, B;
+
+            public Segment(P a, P b)
+            {
+                A = a;
+                B = b;
+            }
+
+            public Segment(Num aX, Num aY, Num bX, Num bY)
+            {
+                A = new P(aX, aY);
+                B = new P(bX, bY);
+            }
+        }
+
         // 2次元ベクトル
         public struct P
         {
