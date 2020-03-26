@@ -17,24 +17,24 @@ namespace CompLib.Algorithm
                 _ancestor[i] = new List<int>();
             }
 
-            SetAncestor(_root);
-        }
-
-        private void SetAncestor(int n)
-        {
-            if (Depth(n) > 0)
+            var q = new Queue<int>();
+            q.Enqueue(_root);
+            while (q.Count > 0)
             {
-                _ancestor[n].Add(Parent(n));
-            }
+                var d = q.Dequeue();
+                if (Depth(d) > 0)
+                {
+                    _ancestor[d].Add(Parent(d));
+                    for (int i = 0; i < _ancestor[_ancestor[d][i]].Count; i++)
+                    {
+                        _ancestor[d].Add(_ancestor[_ancestor[d][i]][i]);
+                    }
+                }
 
-            for (int i = 0; 1 << (i + 1) <= Depth(n); i++)
-            {
-                _ancestor[n].Add(_ancestor[_ancestor[n][i]][i]);
-            }
-
-            foreach (int i in _child[n])
-            {
-                SetAncestor(i);
+                foreach (int i in _child[d])
+                {
+                    q.Enqueue(i);
+                }
             }
         }
 
