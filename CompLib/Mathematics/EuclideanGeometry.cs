@@ -25,6 +25,40 @@ namespace CompLib.Mathematics
                 X = x;
                 Y = y;
             }
+
+            public static P operator +(P l, P r)
+            {
+                return new P(Add(l.X, r.X), Add(l.Y, r.Y));
+            }
+
+            public static P operator -(P l, P r)
+            {
+                return new P(Add(l.X, -r.X), Add(l.Y, -r.Y));
+            }
+
+            public static P operator *(P l, Num r)
+            {
+                return new P(l.X * r, l.Y * r);
+            }
+
+            /// <summary>
+            /// 内積 l * r = |l|*|r|*cosθ
+            /// </summary>
+            /// <returns></returns>
+            public Num Dot(P r)
+            {
+                return Add(X * r.X, Y * r.Y);
+            }
+
+            /// <summary>
+            /// 外積 l * r = |l|*|r|*sinθ
+            /// </summary>
+            /// <param name="r"></param>
+            /// <returns></returns>
+            public Num Det(P r)
+            {
+                return Add(X * r.Y, -Y * r.X);
+            }
         }
     }
 }
