@@ -25,23 +25,25 @@ namespace CompLib.Algorithm
                 _child[i] = new List<int>();
             }
 
-            _depth = new int[_size];
+            _depth = new int[_size].Select(i => -1).ToArray();
             _parent = new int[_size];
+
+            _depth[_root] = 0;
             _parent[_root] = -1;
+            var q = new Queue<int>();
+            q.Enqueue(_root);
 
-            Search(_root, 0, -1);
-        }
-
-        private void Search(int i, int d, int p)
-        {
-            _depth[i] = d;
-            _parent[i] = p;
-
-            foreach (int j in _edge[i])
+            while (q.Count > 0)
             {
-                if (p == j) continue;
-                _child[i].Add(j);
-                Search(j, d + 1, i);
+                var d = q.Dequeue();
+                foreach (int i in _edge[d])
+                {
+                    if (_depth[i] != -1) continue;
+                    _child[d].Add(i);
+                    _depth[i] = _depth[d] + 1;
+                    _parent[i] = d;
+                    q.Enqueue(i);
+                }
             }
         }
 
