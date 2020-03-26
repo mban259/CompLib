@@ -28,6 +28,32 @@ namespace CompLib.Mathematics
         }
 
         /// <summary>
+        /// 直線 a-b
+        /// </summary>
+        public struct Line
+        {
+            public readonly P A, B;
+
+            public Line(P a, P b)
+            {
+                A = a;
+                B = b;
+            }
+
+            public Line(Num aX, Num aY, Num bX, Num bY)
+            {
+                A = new P(aX, aY);
+                B = new P(bX, bY);
+            }
+
+            public Line(Segment s)
+            {
+                A = s.A;
+                B = s.B;
+            }
+        }
+
+        /// <summary>
         /// 線分 a-b
         /// </summary>
         public struct Segment
@@ -44,6 +70,11 @@ namespace CompLib.Mathematics
             {
                 A = new P(aX, aY);
                 B = new P(bX, bY);
+            }
+
+            public Line ToLine()
+            {
+                return new Line(A, B);
             }
         }
 
