@@ -1,24 +1,14 @@
 namespace CompLib.Algorithm
 {
+    using Mathematics;
     using System;
     using System.Numerics;
+
     public static class FastFourierTransform
     {
-        private const int E = 50;
-        private const long N = 1L << E;
-
-        // 1の原始N乗根
-        private const long O = 1521;
-        private const long InvO = 546857209190701451;
-
-        private const long Mod = 1012 * N + 1;
-
-        // private const int E = 27;
-        // private const long N = 1L << E;
-        // private const long O = 137;
-        // private const long InvO = 749463956;
-        // private const long Mod = 15 * N + 1;
-
+        private const int E = 26;
+        public static readonly ModInt O = new ModInt(18769, 136);
+        public static readonly ModInt InvO = new ModInt(137728885, 839354248);
 
         // Z[i] 1の原始2^i乗根
         public static readonly ModInt[] Z;
@@ -75,11 +65,11 @@ namespace CompLib.Algorithm
 
             ModInt[] nF = Transform(hatF, l, true);
 
-            ModInt invLen = ModInt.Pow(len, Mod - 2);
+            ModInt invLen = ModInt.Inverse(len);
             long[] f = new long[len];
             for (int i = 0; i < len; i++)
             {
-                f[i] = (nF[i] * invLen)._num;
+                f[i] = (nF[i] * invLen).Num;
             }
 
             return f;
@@ -227,11 +217,30 @@ namespace CompLib.Algorithm
 
         public struct ModInt
         {
-            public long _num { get; private set; }
+            private const long Mod1 = (1L << 27) * 15 + 1;
+            private const long Mod2 = (1L << 26) * 27 + 1;
+            public long Num1 { get; private set; }
+            public long Num2 { get; private set; }
+
+            public long Num
+            {
+                get
+                {
+                    long pq;
+                    return EMath.ChaineseRemainderTheorem(Num1, Mod1, Num2, Mod2, out pq);
+                }
+            }
 
             public ModInt(long n)
             {
-                _num = n % Mod;
+                Num1 = n % Mod1;
+                Num2 = n % Mod2;
+            }
+
+            public ModInt(long n, long m)
+            {
+                Num1 = n % Mod1;
+                Num2 = m % Mod2;
             }
 
             public static implicit operator ModInt(long n)
@@ -241,42 +250,12 @@ namespace CompLib.Algorithm
 
             public static ModInt operator *(ModInt a, ModInt b)
             {
-                if (Mod < int.MaxValue)
-                {
-                    return (a._num * b._num) % Mod;
-                }
-
-                long bb = b._num;
-                ModInt result = 0;
-                while (bb > 0)
-                {
-                    if (bb % 2 == 1)
-                    {
-                        result += a;
-                    }
-
-                    a += a;
-                    bb /= 2;
-                }
-
-                return result;
+                return new ModInt(a.Num1 * b.Num1, a.Num2 * b.Num2);
             }
 
             public static ModInt operator +(ModInt a, ModInt b)
             {
-                return (a._num + b._num) % Mod;
-            }
-
-            // a^(2^b)
-            public static ModInt Pow2(ModInt a, int b)
-            {
-                ModInt result = a;
-                for (int i = 0; i < b; i++)
-                {
-                    result *= result;
-                }
-
-                return result;
+                return new ModInt(a.Num1 + b.Num1, a.Num2 + b.Num2);
             }
 
             public static ModInt Pow(ModInt a, long b)
@@ -294,6 +273,43 @@ namespace CompLib.Algorithm
                 }
 
                 return result;
+            }
+
+            public static ModInt Inverse(int n)
+            {
+                long t1 = n;
+                long num1 = 1;
+                long b1 = Mod1 - 2;
+                while (b1 > 0)
+                {
+                    if (b1 % 2 == 1)
+                    {
+                        num1 *= t1;
+                        num1 %= Mod1;
+                    }
+
+                    t1 *= t1;
+                    t1 %= Mod1;
+                    b1 /= 2;
+                }
+
+                long t2 = n;
+                long num2 = 1;
+                long b2 = Mod2 - 2;
+                while (b2 > 0)
+                {
+                    if (b2 % 2 == 1)
+                    {
+                        num2 *= t2;
+                        num2 %= Mod2;
+                    }
+
+                    t2 *= t2;
+                    t2 %= Mod2;
+                    b2 /= 2;
+                }
+
+                return new ModInt(num1, num2);
             }
         }
     }
