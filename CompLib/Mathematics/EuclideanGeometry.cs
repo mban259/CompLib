@@ -6,6 +6,15 @@ namespace CompLib.Mathematics
 
     public class EuclideanGeometry
     {
+        private const Num Eps = (Num) 1e-10;
+
+        static Num Add(Num l, Num r)
+        {
+            if (Math.Abs(l + r) < Eps * (Math.Abs(l) + Math.Abs(r))) return 0;
+            return l + r;
+        }
+
+
         // 2次元ベクトル
         public struct P
         {
