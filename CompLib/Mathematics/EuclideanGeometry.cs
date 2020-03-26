@@ -14,6 +14,18 @@ namespace CompLib.Mathematics
             return l + r;
         }
 
+        /// <summary>
+        /// 線分l上に点pがあるか?
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public static bool OnSegment(Segment l, P p)
+        {
+            // pを原点に移動
+            // pが直線l上にある かつ 内積が負
+            return (l.A - p).Det(l.B - p) == 0 && (l.A - p).Dot(l.B - p) <= 0;
+        }
 
         /// <summary>
         /// 線分 a-b
