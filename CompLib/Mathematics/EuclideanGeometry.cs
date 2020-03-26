@@ -28,6 +28,26 @@ namespace CompLib.Mathematics
         }
 
         /// <summary>
+        /// 直線 l,rの交点 l,rが並行なら false
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="r"></param>
+        /// <returns></returns>
+        public static bool Intersection(Line l, Line r, out P p)
+        {
+            var t = (r.B - r.A).Det(l.B - l.A);
+            // t == 0 l,rが並行
+            if (t < Eps)
+            {
+                p = new P();
+                return false;
+            }
+
+            p = l.A + (l.B - l.A) * ((r.B - r.A).Det(r.A - l.A) / t);
+            return true;
+        }
+
+        /// <summary>
         /// 直線 a-b
         /// </summary>
         public struct Line
