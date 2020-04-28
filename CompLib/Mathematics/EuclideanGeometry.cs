@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace CompLib.Mathematics
 {
-    using Num = Decimal;
+    using Num = Double;
 
     public class EuclideanGeometry
     {
@@ -21,6 +22,17 @@ namespace CompLib.Mathematics
         }
 
         /// <summary>
+        /// 直線l上にpがあるか?
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public static bool OnLine(Line l, P p)
+        {
+            return (l.A - p).Det(l.B - p) == 0;
+        }
+
+        /// <summary>
         /// 線分l上に点pがあるか?
         /// </summary>
         /// <param name="l"></param>
@@ -30,7 +42,7 @@ namespace CompLib.Mathematics
         {
             // pを原点に移動
             // pが直線l上にある かつ 内積が負
-            return (l.A - p).Det(l.B - p) == 0 && (l.A - p).Dot(l.B - p) <= 0;
+            return OnLine(l.ToLine(), p) && (l.A - p).Dot(l.B - p) <= 0;
         }
 
         /// <summary>
@@ -101,6 +113,93 @@ namespace CompLib.Mathematics
 
             return res;
         }
+
+        /// <summary>
+        /// a,bの中点
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static P Mid(P a, P b) => new P(Add(a.X, b.X) / 2, Add(a.Y, b.Y) / 2);
+
+        /// <summary>
+        /// 線分 lの中点
+        /// </summary>
+        /// <param name="l"></param>
+        /// <returns></returns>
+        public static P Mid(Segment l) => Mid(l.A, l.B);
+
+        /// <summary>
+        /// 線分a,bの垂直二等分線
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static Line VerticalBisector(P a, P b)
+        {
+            var mid = Mid(a, b);
+
+            var p = new P(Add(mid.X, Add(b.Y, -a.Y)), Add(mid.Y, Add(a.X, -b.X)));
+            return new Line(mid, p);
+        }
+
+        /// <summary>
+        /// 線分lの垂直二等分線
+        /// </summary>
+        /// <param name="l"></param>
+        /// <returns></returns>
+        public static Line VerticalBisector(Segment l) => VerticalBisector(l.A, l.B);
+
+        /// <summary>
+        /// 3点を通る円
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <returns></returns>
+        public static bool MakeCircle(P a, P b, P c, Circle o)
+        {
+            if (OnLine(new Line(a, b), c))
+            {
+                o = new Circle();
+                return false;
+            }
+
+            P p;
+            Intersection(VerticalBisector(a, b), VerticalBisector(b, c), out p);
+
+            return true;
+        }
+
+        /// <summary>
+        /// 2円の交点
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static P[] Intersection(Circle a, Circle b)
+        {
+            var tmp = a.O - b.O;
+            if (Add(a.R, b.R) * Add(a.R, b.R) > Add(tmp.X * tmp.X, tmp.Y * tmp.Y)) return new P[0];
+            if (Add(tmp.X * tmp.X, tmp.Y * tmp.Y) < Add(a.R, -b.R) * Add(a.R, -b.R)) return new P[0];
+            
+            Num aa = 
+        }
+    }
+
+    /// <summary>
+    /// 円 中心 O 半径 R
+    /// </summary>
+    public struct Circle
+    {
+        public readonly P O;
+        public readonly Num R;
+
+        public Circle(P o, Num r)
+        {
+            O = o;
+            R = r;
+        }
     }
 
     /// <summary>
@@ -127,6 +226,8 @@ namespace CompLib.Mathematics
             A = s.A;
             B = s.B;
         }
+
+        public P Vector() => A - B;
     }
 
     /// <summary>
@@ -198,5 +299,7 @@ namespace CompLib.Mathematics
         {
             return EuclideanGeometry.Add(X * r.Y, -Y * r.X);
         }
+
+        public Num Abs() => Math.Sqrt(EuclideanGeometry.Add(X * X, Y * Y));
     }
 }
