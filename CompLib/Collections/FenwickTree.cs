@@ -43,6 +43,28 @@ namespace CompLib.Collections
             return result;
         }
 
+        /// <summary>
+        /// [0,i)の和がw以上になるi
+        /// </summary>
+        /// <param name="w"></param>
+        /// <returns></returns>
+        public int LowerBound(int w)
+        {
+            if (w <= 0) return 0;
+            int x = 0;
+            int k = 1;
+            while (k * 2 < Count) k *= 2;
+            for (; k > 0; k /= 2)
+            {
+                if (x + k < Count && _array[x + k] < w)
+                {
+                    w -= _array[x + k];
+                    x += k;
+                }
+            }
+            return x + 1;
+        }
+
         // [l,r)の和を求める
         public Num Sum(int l, int r) => Sum(r) - Sum(l);
     }
