@@ -96,7 +96,7 @@ namespace CompLib.Algorithm
 
         public int Dist(int a, int b)
         {
-            return Depth(a) + Depth(b) - Depth(LowestCommonAncestor(a, b));
+            return Depth(a) + Depth(b) - 2 * Depth(LowestCommonAncestor(a, b));
         }
     }
 }
