@@ -40,11 +40,14 @@ namespace CompLib.DataStructure
         public bool Same(int x, int y) => Find(x) == Find(y);
 
         /// <summary>
-        /// (x, y)に辺を追加する x,yが既に同じ成分ならfalseを返す
+        /// (x, y)に辺を追加する
         /// </summary>
+        /// <remarks>
+        /// ACLでは連結された代表値を返しますが、ここでは連結できたか?を返します
+        /// </remarks>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        /// <returns></returns>
+        /// <returns>x,yが違う連結成分だったならtrueを返す</returns>
         public bool Connect(int x, int y)
         {
             x = Find(x);
