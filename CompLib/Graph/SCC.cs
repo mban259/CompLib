@@ -43,11 +43,11 @@ namespace CompLib.Graph
         /// <summary>
         /// 強連結成分分解して、トポロジカル順序で返します
         /// </summary>
+        /// <remarks>内部でExecute()します</remarks>
         /// <returns></returns>
-        public List<int>[] Execute()
+        public List<int>[] GetSCCs()
         {
-            Build();
-            CalcId();
+            Execute();
 
             // ACLだとvec.reserveしてるけどいる?
             List<int>[] groups = new List<int>[_groupNum];
@@ -64,8 +64,12 @@ namespace CompLib.Graph
             return groups;
         }
 
-        void CalcId()
+        /// <summary>
+        /// 強連結成分分解をします
+        /// </summary>
+        public void Execute()
         {
+            Build();
             _nowOrd = 0;
             _groupNum = 0;
             _visited = new List<int>(_n);
@@ -88,6 +92,33 @@ namespace CompLib.Graph
             {
                 _ids[i] = _groupNum - 1 - _ids[i];
             }
+        }
+
+        /// <summary>
+        /// 強連結成分の個数
+        /// </summary>
+        /// <remarks>
+        /// Execute()してから呼んでください
+        /// </remarks>
+        public int GroupsCount
+        {
+            get
+            {
+                return _groupNum;
+            }
+        }
+
+        /// <summary>
+        /// vが含まれる強連結成分のトポロジカル順序
+        /// </summary>
+        /// <param name="v"></param>
+        /// <remarks>
+        /// Execute()してから呼んでください
+        /// </remarks>
+        /// <returns></returns>
+        public int GetId(int v)
+        {
+            return _ids[v];
         }
 
         void Go(int v)
