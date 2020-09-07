@@ -48,7 +48,7 @@ namespace CompLib.Collections
         /// </summary>
         /// <param name="w"></param>
         /// <returns></returns>
-        public int LowerBound(int w)
+        public int LowerBound(Num w)
         {
             if (w <= 0) return 0;
             int x = 0;
