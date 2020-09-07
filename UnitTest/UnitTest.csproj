@@ -7,7 +7,7 @@
 
         <OutputType>Library</OutputType>
 
-        <LangVersion>6</LangVersion>
+        <LangVersion>7.2</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
