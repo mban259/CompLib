@@ -6,7 +6,6 @@ namespace CompLib.Graph
 {
     class SCC
     {
-        //
         private readonly int _n;
         private readonly List<(int f, int t)> _edges;
 
