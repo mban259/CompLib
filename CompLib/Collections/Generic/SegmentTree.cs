@@ -186,7 +186,7 @@
             get
             {
                 Debug.Assert(0 <= i && i < _n);
-                return _array[i + _n];
+                return _array[i + _size];
             }
         }
     }
