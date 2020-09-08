@@ -33,6 +33,7 @@
         public SegmentTree(T[] a, Func<T, T, T> operation, T identity)
         {
             _n = a.Length;
+            _size = 1;
             while (_size < _n)
             {
                 _size *= 2;
