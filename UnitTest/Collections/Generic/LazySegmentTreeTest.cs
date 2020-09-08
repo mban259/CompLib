@@ -32,7 +32,7 @@ namespace UnitTest.Collections.Generic
         [TestMethod]
         public void AddQueryTest1()
         {
-            var st = new LazySegmentTree<long>(Sum, 0, Mul, Sum, 0);
+            var st = new LazySegmentTreeACL<long>(Sum, 0, Mul, Sum, 0);
             // [0, 0, 0, 0, 0, 0, 0, 0, 0, 0...]
 
             st.Update(0, 9);
@@ -45,7 +45,7 @@ namespace UnitTest.Collections.Generic
         [TestMethod]
         public void RangeAddQueryTest1()
         {
-            var st = new LazySegmentTree<long>(Sum, 0, Mul, Sum, 0);
+            var st = new LazySegmentTreeACL<long>(Sum, 0, Mul, Sum, 0);
             // [0, 0, 0, 0, 0, 0, 0, 0, 0, 0...]
 
             st.Update(3, 7, 5);
@@ -59,7 +59,7 @@ namespace UnitTest.Collections.Generic
         [TestMethod]
         public void UpdateQueryTest1()
         {
-            var st = new LazySegmentTree<long>(Sum, 0, Mul, Update, 0);
+            var st = new LazySegmentTreeACL<long>(Sum, 0, Mul, Update, 0);
             // [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
             st.Update(0, 9);
@@ -73,7 +73,7 @@ namespace UnitTest.Collections.Generic
         [TestMethod]
         public void RangeUpdateQueryTest1()
         {
-            var st = new LazySegmentTree<long>(Sum, 0, Mul, Update, 0);
+            var st = new LazySegmentTreeACL<long>(Sum, 0, Mul, Update, 0);
             // [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
             st.Update(3, 7, 5);
@@ -96,7 +96,7 @@ namespace UnitTest.Collections.Generic
 
         private void RangeSumQuery()
         {
-            var st = new LazySegmentTree<long>(Sum, 0, Mul, Update, 0);
+            var st = new LazySegmentTreeACL<long>(Sum, 0, Mul, Update, 0);
             var array = new long[N];
             var rnd = new Random();
             for (int j = 0; j < 100; j++)
@@ -146,7 +146,7 @@ namespace UnitTest.Collections.Generic
         [TestMethod]
         public void UpdateQueryTest2()
         {
-            var st = new LazySegmentTree<long>(Math.Min, long.MaxValue, Minimum, Update, long.MaxValue);
+            var st = new LazySegmentTreeACL<long>(Math.Min, long.MaxValue, Minimum, Update, long.MaxValue);
             st.Update(3, 10);
             st.Update(6, 99);
             st.Update(2, 1);
@@ -158,7 +158,7 @@ namespace UnitTest.Collections.Generic
         [TestMethod]
         public void RangeUpdateQueryTest2()
         {
-            var st = new LazySegmentTree<long>(Math.Min, long.MaxValue, Minimum, Update, long.MaxValue);
+            var st = new LazySegmentTreeACL<long>(Math.Min, long.MaxValue, Minimum, Update, long.MaxValue);
             st.Update(0, 10, 6);
             // [6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
 
@@ -182,7 +182,7 @@ namespace UnitTest.Collections.Generic
 
         private void RangeMinimumQuery()
         {
-            var st = new LazySegmentTree<long>(Math.Min, long.MaxValue, Minimum, Update, long.MaxValue);
+            var st = new LazySegmentTreeACL<long>(Math.Min, long.MaxValue, Minimum, Update, long.MaxValue);
             var array = new long[N];
             for (int i = 0; i < N; i++)
             {
