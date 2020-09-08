@@ -73,9 +73,11 @@
             _composition = composition;
             _id = id;
             _size = 1;
+            _log = 0;
             while (_size < _n)
             {
                 _size <<= 1;
+                _log++;
             }
 
             _d = new S[2 * _size];
