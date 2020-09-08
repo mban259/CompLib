@@ -5,7 +5,8 @@
 
     public class SegmentTree<T>
     {
-        private readonly int N;
+        // 見かけ上の大きさ、実際の大きさ
+        private readonly int _n, _size;
         private T[] _array;
 
         private T _identity;
@@ -13,16 +14,17 @@
 
         public SegmentTree(int n, Func<T, T, T> operation, T identity)
         {
-            N = 1;
-            while (N < n)
+            _n = n;
+            _size = 1;
+            while (_size < _n)
             {
-                N *= 2;
+                _size *= 2;
             }
 
             _identity = identity;
             _operation = operation;
-            _array = new T[N * 2];
-            for (int i = 1; i < N * 2; i++)
+            _array = new T[_size * 2];
+            for (int i = 1; i < _size * 2; i++)
             {
                 _array[i] = _identity;
             }
@@ -30,25 +32,25 @@
 
         public SegmentTree(T[] a, Func<T, T, T> operation, T identity)
         {
-            N = 1;
-            while (N < a.Length)
+            _n = a.Length;
+            while (_size < _n)
             {
-                N *= 2;
+                _size *= 2;
             }
 
             _identity = identity;
             _operation = operation;
-            _array = new T[N * 2];
+            _array = new T[_size * 2];
             for (int i = 0; i < a.Length; i++)
             {
-                _array[i + N] = a[i];
+                _array[i + _size] = a[i];
             }
-            for (int i = a.Length; i < N; i++)
+            for (int i = a.Length; i < _size; i++)
             {
-                _array[i + N] = identity;
+                _array[i + _size] = identity;
             }
 
-            for (int i = N - 1; i >= 1; i--)
+            for (int i = _size - 1; i >= 1; i--)
             {
                 _array[i] = operation(_array[i * 2], _array[i * 2 + 1]);
             }
@@ -61,7 +63,7 @@
         /// <param name="n"></param>
         public void Update(int i, T n)
         {
-            i += N;
+            i += _size;
             _array[i] = n;
             while (i > 1)
             {
@@ -94,7 +96,7 @@
         /// <returns></returns>
         public T Query(int left, int right)
         {
-            return Query(left, right, 1, 0, N);
+            return Query(left, right, 1, 0, _size);
         }
 
         /// <summary>
@@ -114,19 +116,19 @@
         /// <returns></returns>
         int MaxRight(int l, Func<T, bool> f)
         {
-            Debug.Assert(0 <= l && l <= N);
+            Debug.Assert(0 <= l && l <= _n);
 #if DEBUG
             Debug.Assert(f(_identity));
 #endif
-            if (l == N) return N;
-            l += N;
+            if (l == _n) return _n;
+            l += _size;
             T sm = _identity;
             do
             {
                 while (l % 2 == 0) l >>= 1;
                 if (!f(_operation(sm, _array[l])))
                 {
-                    while (l < N)
+                    while (l < _size)
                     {
                         l <<= 1;
                         if (f(_operation(sm, _array[l])))
@@ -135,12 +137,12 @@
                             l++;
                         }
                     }
-                    return l - N;
+                    return l - _size;
                 }
                 sm = _operation(sm, _array[l]);
                 l++;
             } while ((l & -l) != l);
-            return N;
+            return _n;
         }
         /// <summary>
         /// f(op(a[l],a[l+1],...a[r-1])) = trueとなる最小のlを返します
@@ -150,11 +152,12 @@
         /// <returns></returns>
         int MinLeft(int r, Func<T, bool> f)
         {
-            Debug.Assert(0 <= r && r <= N);
+            Debug.Assert(0 <= r && r <= _n);
 #if DEBUG
             Debug.Assert(f(_identity));
 #endif
             if (r == 0) return 0;
+            r += _size;
             T sm = _identity;
 
             do
@@ -163,7 +166,7 @@
                 while (r > 1 && (r % 2 != 0)) r >>= 1;
                 if (!f(_operation(_array[r], sm)))
                 {
-                    while (r < N)
+                    while (r < _size)
                     {
                         r = (2 * r + 1);
                         if (f(_operation(_array[r], sm)))
@@ -172,7 +175,7 @@
                             r--;
                         }
                     }
-                    return r + 1 - N;
+                    return r + 1 - _size;
                 }
                 sm = _operation(_array[r], sm);
             } while ((r & -r) != r);
@@ -182,7 +185,7 @@
         public T this[int i]
         {
             set { Update(i, value); }
-            get { return _array[i + N]; }
+            get { return _array[i + _n]; }
         }
     }
 }
