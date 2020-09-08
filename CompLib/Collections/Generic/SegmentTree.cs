@@ -96,6 +96,15 @@
             return Query(left, right, 1, 0, N);
         }
 
+        /// <summary>
+        /// op(a[0],a[1],...,a[n-1])を返します
+        /// </summary>
+        /// <returns></returns>
+        public T All()
+        {
+            return _array[1];
+        }
+
         public T this[int i]
         {
             set { Update(i, value); }
