@@ -73,22 +73,6 @@
             }
         }
 
-        private T Query(int left, int right, int k, int l, int r)
-        {
-            if (r <= left || right <= l)
-            {
-                return _identity;
-            }
-
-            if (left <= l && r <= right)
-            {
-                return _array[k];
-            }
-
-            return _operation(Query(left, right, k * 2, l, (l + r) / 2),
-                Query(left, right, k * 2 + 1, (l + r) / 2, r));
-        }
-
         /// <summary>
         /// A[left] op A[left+1] ... op A[right-1]を求める
         /// </summary>
@@ -98,7 +82,19 @@
         public T Query(int left, int right)
         {
             Debug.Assert(0 <= left && left <= right && right <= _n);
-            return Query(left, right, 1, 0, _size);
+            T sml = _identity;
+            T smr = _identity;
+
+            left += _size;
+            right += _size;
+            while (left < right)
+            {
+                if ((left & 1) != 0) sml = _operation(sml, _array[left++]);
+                if ((right & 1) != 0) smr = _operation(_array[--right], smr);
+                left >>= 1;
+                right >>= 1;
+            }
+            return _operation(sml, smr);
         }
 
         /// <summary>
