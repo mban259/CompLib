@@ -27,7 +27,7 @@
         /// <param name="op">区間演算</param>
         /// <param name="e">Sの単位元</param>
         /// <param name="mapping">関数f(x)</param>
-        /// <param name="composition">fの積</param>
+        /// <param name="composition">f*g, f(g(x))</param>
         /// <param name="id">f(x) = xとなるf (恒等写像)</param>
         public LazySegmentTree(int n, Func<S, S, S> op, S e, Func<F, S, S> mapping, Func<F, F, F> composition, F id)
         {
