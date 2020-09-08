@@ -112,7 +112,7 @@
         /// <param name="l"></param>
         /// <param name="f"></param>
         /// <returns></returns>
-        int MaxRight(int l, Func<T, bool> f)
+        public int MaxRight(int l, Func<T, bool> f)
         {
             Debug.Assert(0 <= l && l <= _n);
 #if DEBUG
@@ -148,7 +148,7 @@
         /// <param name="r"></param>
         /// <param name="f"></param>
         /// <returns></returns>
-        int MinLeft(int r, Func<T, bool> f)
+        public int MinLeft(int r, Func<T, bool> f)
         {
             Debug.Assert(0 <= r && r <= _n);
 #if DEBUG
