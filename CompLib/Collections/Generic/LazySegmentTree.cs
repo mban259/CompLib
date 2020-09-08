@@ -1,137 +1,322 @@
-namespace CompLib.Collections.Generic
+﻿namespace CompLib.Collections.Generic
 {
     using System;
+    using System.Diagnostics;
 
-    public class LazySegmentTree<T>
+    /// <summary>
+    /// 長さnの配列の区間演算、区間更新ができるデータ構造
+    /// </summary>
+    /// <typeparam name="S">モノイドの型</typeparam>
+    /// <typeparam name="F">写像の型</typeparam>
+    public class LazySegmentTree<S, F>
     {
-        private const int N = 1 << 21;
-        private readonly T[] _array;
-        private readonly T[] _tmp;
-        private readonly bool[] _flag;
+        private readonly int _n;
+        private readonly int _size;
+        private int _log;
 
+        private readonly S[] _d;
+        private readonly F[] _lz;
 
-        private readonly T _identity, _updateIdentity;
-        private readonly Func<T, T, T> _operation, _update;
-        private readonly Func<T, int, T> _multiplication;
+        private readonly Func<S, S, S> _op;
+        private readonly S _e;
+        private readonly Func<F, S, S> _mapping;
+        private readonly Func<F, F, F> _composition;
+        private readonly F _id;
 
-        /// <summary>
-        /// コンストラクタ updateIdentityで初期化
-        /// </summary>
-        /// <param name="operation">区間演算用の演算</param>
-        /// <param name="identity">(T, operation)の単位元</param>
-        /// <param name="multiplication">(T, operation)のスカラー乗算</param>
-        /// <param name="update">区間更新用の演算</param>
-        /// <param name="updateIdentity">(T, update)の左単位元</param>
-        public LazySegmentTree(Func<T, T, T> operation, T identity, Func<T, int, T> multiplication, Func<T, T, T> update,
-            T updateIdentity)
+        /// <param name="n">サイズ</param>
+        /// <param name="op">区間演算</param>
+        /// <param name="e">Sの単位元</param>
+        /// <param name="mapping">関数f(x)</param>
+        /// <param name="composition">fの積</param>
+        /// <param name="id">f(x) = xとなるf (恒等写像)</param>
+        public LazySegmentTree(int n, Func<S, S, S> op, S e, Func<F, S, S> mapping, Func<F, F, F> composition, F id)
         {
-            _operation = operation;
-            _identity = identity;
-            _multiplication = multiplication;
-            _update = update;
-            _updateIdentity = updateIdentity;
-            _array = new T[2 * N];
-            for (int i = 0; i < N; i++)
+            _n = n;
+            _op = op;
+            _e = e;
+            _mapping = mapping;
+            _composition = composition;
+            _id = id;
+            _size = 1;
+            _log = 0;
+            while (_size < _n)
             {
-                _array[i + N] = _updateIdentity;
+                _size <<= 1;
+                _log++;
             }
 
-            for (int i = N - 1; i >= 1; i--)
+            _d = new S[2 * _size];
+            for (int i = 0; i < 2 * _size; i++)
             {
-                _array[i] = _operation(_array[i * 2], _array[i * 2 + 1]);
+                _d[i] = _e;
             }
 
-            _tmp = new T[2 * N];
-            for (int i = 1; i < 2 * N; i++)
+            _lz = new F[_size];
+            for (int i = 0; i < _size; i++)
             {
-                _tmp[i] = _updateIdentity;
-            }
-
-            _flag = new bool[2 * N];
-        }
-
-        private void Eval(int k, int l, int r)
-        {
-            if (_flag[k])
-            {
-                if (r - l > 1)
-                {
-                    _tmp[k * 2] = _update(_tmp[k * 2], _tmp[k]);
-                    _flag[k * 2] = true;
-                    _tmp[k * 2 + 1] = _update(_tmp[k * 2 + 1], _tmp[k]);
-                    _flag[k * 2 + 1] = true;
-                }
-
-                _array[k] = _update(_array[k], _multiplication(_tmp[k], r - l));
-                _tmp[k] = _updateIdentity;
-                _flag[k] = false;
+                _lz[i] = _id;
             }
         }
 
-        private void Update(int left, int right, int k, int l, int r, T n)
+        /// <param name="v">元配列</param>
+        /// <param name="op">区間演算</param>
+        /// <param name="e">Sの単位元</param>
+        /// <param name="mapping">関数f(x)</param>
+        /// <param name="composition">fの積</param>
+        /// <param name="id">f(x) = xとなるf (恒等写像)</param>
+        public LazySegmentTree(S[] v, Func<S, S, S> op, S e, Func<F, S, S> mapping, Func<F, F, F> composition, F id)
         {
-            Eval(k, l, r);
-            if (r <= left || right <= l) return;
-            if (left <= l && r <= right)
+            _n = v.Length;
+            _op = op;
+            _e = e;
+            _mapping = mapping;
+            _composition = composition;
+            _id = id;
+            _size = 1;
+            while (_size < _n)
             {
-                // 本当は _update(tmp[k], n)だけど 上でEval()したので _tmp[k]は単位元
-                _tmp[k] = n;
-                _flag[k] = true;
-                Eval(k, l, r);
+                _size <<= 1;
             }
-            else
+
+            _d = new S[2 * _size];
+            for (int i = 0; i < _n; i++)
             {
-                Update(left, right, k * 2, l, (l + r) / 2, n);
-                Update(left, right, k * 2 + 1, (l + r) / 2, r, n);
-                _array[k] = _operation(_array[k * 2], _array[k * 2 + 1]);
+                _d[i + _size] = v[i];
             }
+            for (int i = _n; i < _size; i++)
+            {
+                _d[i] = _e;
+            }
+            for (int i = _size - 1; i >= 1; i--)
+            {
+                Update(i);
+            }
+
+            _lz = new F[_size];
+            for (int i = 0; i < _size; i++)
+            {
+                _lz[i] = _id;
+            }
+        }
+        /// <summary>
+        /// A[p]にxを代入 O(log n)
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="x"></param>
+        public void Set(int p, S x)
+        {
+            Debug.Assert(0 <= p && p < _n);
+            p += _size;
+            for (int i = _log; i >= 1; i--) Push(p >> i);
+            _d[p] = x;
+            for (int i = 1; i <= _log; i++) Update(p >> i);
         }
 
         /// <summary>
-        /// [left, right)をupdate(A[i], n)に更新する
+        /// A[p] を返す O(log n)
         /// </summary>
-        /// <param name="left">右端</param>
-        /// <param name="right">左端</param>
-        /// <param name="n">値</param>
-        public void Update(int left, int right, T n) => Update(left, right, 1, 0, N, n);
-
-        /// <summary>
-        /// A[i]をupdate(A[i] ,n)に更新する
-        /// </summary>
-        /// <param name="i">index</param>
-        /// <param name="n">値</param>
-        public void Update(int i, T n) => Update(i, i + 1, n);
-
-        private T Query(int left, int right, int k, int l, int r)
-        {
-            Eval(k, l, r);
-            if (r <= left || right <= l) return _identity;
-            if (left <= l && r <= right) return _array[k];
-            return _operation(Query(left, right, k * 2, l, (l + r) / 2), Query(left, right, k * 2 + 1, (l + r) / 2, r));
-        }
-
-        /// <summary>
-        /// A[left] op A[left+1] ... A[right-1]を求める O(log N)
-        /// </summary>
-        /// <param name="left">左端</param>
-        /// <param name="right">右端</param>
+        /// <param name="p"></param>
         /// <returns></returns>
-        public T Query(int left, int right) => Query(left, right, 1, 0, N);
-
-        public T this[int i]
+        public S Get(int p)
         {
-            get { return Query(i, i + 1); }
+            Debug.Assert(0 <= p && p < _n);
+            p += _size;
+            for (int i = _log; i >= 1; i--) Push(p >> i);
+            return _d[p];
         }
 
-        public T[] ToArray()
+        /// <summary>
+        /// op(A[l,r))を計算します O(log n)
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="r"></param>
+        /// <returns></returns>
+        public S Query(int l, int r)
         {
-            T[] result = new T[N];
-            for (int i = 0; i < N; i++)
+            Debug.Assert(0 <= l && l <= r && r <= _n);
+            if (l == r) return _e;
+            l += _size;
+            r += _size;
+            for (int i = _log; i >= 1; i--)
             {
-                result[i] = this[i];
+                if (((l >> i) << i) != l) Push(l >> i);
+                if (((r >> i) << i) != r) Push(r >> i);
             }
 
-            return result;
+            S sml = _e, smr = _e;
+            while (l < r)
+            {
+                if ((l & 1) != 0) sml = _op(sml, _d[l++]);
+                if ((r & 1) != 0) smr = _op(_d[--r], smr);
+                l >>= 1;
+                r >>= 1;
+            }
+
+            return _op(sml, smr);
+        }
+
+        /// <summary>
+        /// op(A)を計算します O(1)
+        /// </summary>
+        /// <returns></returns>
+        public S All()
+        {
+            return _d[1];
+        }
+
+        /// <summary>
+        /// A[p]にf(A[p])を代入します O(log n)
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="f"></param>
+        public void Apply(int p, F f)
+        {
+            Debug.Assert(0 <= p && p < _n);
+            p += _size;
+            for (int i = _log; i >= 1; i--) Push(p >> i);
+            _d[p] = _mapping(f, _d[p]);
+            for (int i = 1; i <= _log; i++) Update(p >> i);
+        }
+
+        /// <summary>
+        /// i = l,l+1,...,r-1について A[i]にf(A[i])を代入します O(log n)
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="r"></param>
+        /// <param name="f"></param>
+        public void Apply(int l, int r, F f)
+        {
+            Debug.Assert(0 <= l && l <= r && r <= _n);
+            if (l == r) return;
+
+            l += _size;
+            r += _size;
+
+            for (int i = _log; i >= 1; i--)
+            {
+                if (((l >> i) << i) != l) Push(l >> i);
+                if (((r >> i) << i) != r) Push((r - 1) >> i);
+            }
+
+            {
+                int l2 = l, r2 = r;
+                while (l < r)
+                {
+                    if ((l & 1) > 0) AllApply(l++, f);
+                    if ((r & 1) > 0) AllApply(--r, f);
+                    l >>= 1;
+                    r >>= 1;
+                }
+                l = l2;
+                r = r2;
+            }
+
+            for (int i = 1; i <= _log; i++)
+            {
+                if (((l >> i) << i) != l) Update(l >> i);
+                if (((r >> i) << i) != r) Update((r - 1) >> i);
+            }
+        }
+
+        /// <summary>
+        /// g(op(A[l,r))) = true となる最大のrを探します O(log n)
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="g"></param>
+        /// <returns></returns>
+        public int MaxRight(int l, Func<S, bool> g)
+        {
+            Debug.Assert(0 <= l && l <= _n);
+#if DEBUG
+            Debug.Assert(g(_e));
+#endif
+            if (l == _n) return _n;
+            l += _size;
+            for (int i = _log; i >= 1; i--) Push(l >> i);
+            S sm = _e;
+            do
+            {
+                while (l % 2 == 0) l >>= 1;
+                if (!g(_op(sm, _d[l])))
+                {
+                    while (l < _size)
+                    {
+                        Push(l);
+                        l = (2 * l);
+                        if (g(_op(sm, _d[l])))
+                        {
+                            sm = _op(sm, _d[l]);
+                            l++;
+                        }
+                    }
+                    return l - _size;
+                }
+                sm = _op(sm, _d[l]);
+                l++;
+            } while ((l & -l) != l);
+            return _n;
+        }
+
+        /// <summary>
+        /// g(op(A[l,r))) = trueとなる最小のlを探します O(log n)
+        /// </summary>
+        /// <param name="r"></param>
+        /// <param name="g"></param>
+        /// <returns></returns>
+        public int MinLeft(int r, Func<S, bool> g)
+        {
+            Debug.Assert(0 <= r && r <= _n);
+#if DEBUG
+            Debug.Assert(g(_e));
+#endif
+            if (r == 0) return 0;
+            r += _size;
+            for (int i = _log; i >= 1; i--) Push((r - 1) >> i);
+            S sm = _e;
+            do
+            {
+                r--;
+                while (r > 1 && (r % 2) != 0) r >>= 1;
+                if (!g(_op(_d[r], sm)))
+                {
+                    while (r < _size)
+                    {
+                        Push(r);
+                        r = (2 * r + 1);
+                        if (g(_op(_d[r], sm)))
+                        {
+                            sm = _op(_d[r], sm);
+                            r--;
+                        }
+                    }
+                    return r + 1 - _size;
+                }
+                sm = _op(_d[r], sm);
+            } while ((r & -r) != r);
+            return 0;
+        }
+
+        public S this[int p]
+        {
+            get { return Get(p); }
+            set { Set(p, value); }
+        }
+
+        private void Update(int k)
+        {
+            _d[k] = _op(_d[2 * k], _d[2 * k + 1]);
+        }
+
+        private void AllApply(int k, F f)
+        {
+            _d[k] = _mapping(f, _d[k]);
+            if (k < _size) _lz[k] = _composition(f, _lz[k]);
+        }
+        private void Push(int k)
+        {
+            AllApply(2 * k, _lz[k]);
+            AllApply(2 * k + 1, _lz[k]);
+            _lz[k] = _id;
         }
     }
 }
