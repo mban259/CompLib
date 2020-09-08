@@ -1,6 +1,7 @@
 ﻿namespace CompLib.Collections.Generic
 {
     using System;
+    using System.Diagnostics;
 
     public class SegmentTree<T>
     {
@@ -103,6 +104,79 @@
         public T All()
         {
             return _array[1];
+        }
+
+        /// <summary>
+        /// f(op(a[l],a[l+1],...a[r-1])) = trueとなる最大のrを返します
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="f"></param>
+        /// <returns></returns>
+        int MaxRight(int l, Func<T, bool> f)
+        {
+            Debug.Assert(0 <= l && l <= N);
+#if DEBUG
+            Debug.Assert(f(_identity));
+#endif
+            if (l == N) return N;
+            l += N;
+            T sm = _identity;
+            do
+            {
+                while (l % 2 == 0) l >>= 1;
+                if (!f(_operation(sm, _array[l])))
+                {
+                    while (l < N)
+                    {
+                        l <<= 1;
+                        if (f(_operation(sm, _array[l])))
+                        {
+                            sm = _operation(sm, _array[l]);
+                            l++;
+                        }
+                    }
+                    return l - N;
+                }
+                sm = _operation(sm, _array[l]);
+                l++;
+            } while ((l & -l) != l);
+            return N;
+        }
+        /// <summary>
+        /// f(op(a[l],a[l+1],...a[r-1])) = trueとなる最小のlを返します
+        /// </summary>
+        /// <param name="r"></param>
+        /// <param name="f"></param>
+        /// <returns></returns>
+        int MinLeft(int r, Func<T, bool> f)
+        {
+            Debug.Assert(0 <= r && r <= N);
+#if DEBUG
+            Debug.Assert(f(_identity));
+#endif
+            if (r == 0) return 0;
+            T sm = _identity;
+
+            do
+            {
+                r--;
+                while (r > 1 && (r % 2 != 0)) r >>= 1;
+                if (!f(_operation(_array[r], sm)))
+                {
+                    while (r < N)
+                    {
+                        r = (2 * r + 1);
+                        if (f(_operation(_array[r], sm)))
+                        {
+                            sm = _operation(_array[r], sm);
+                            r--;
+                        }
+                    }
+                    return r + 1 - N;
+                }
+                sm = _operation(_array[r], sm);
+            } while ((r & -r) != r);
+            return 0;
         }
 
         public T this[int i]
