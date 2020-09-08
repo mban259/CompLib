@@ -27,6 +27,32 @@
             }
         }
 
+        public SegmentTree(T[] a, Func<T, T, T> operation, T identity)
+        {
+            N = 1;
+            while (N < a.Length)
+            {
+                N *= 2;
+            }
+
+            _identity = identity;
+            _operation = operation;
+            _array = new T[N * 2];
+            for (int i = 0; i < a.Length; i++)
+            {
+                _array[i + N] = a[i];
+            }
+            for (int i = a.Length; i < N; i++)
+            {
+                _array[i + N] = identity;
+            }
+
+            for (int i = N - 1; i >= 1; i--)
+            {
+                _array[i] = operation(_array[i * 2], _array[i * 2 + 1]);
+            }
+        }
+
         /// <summary>
         /// A[i]をnに更新 O(log N)
         /// </summary>
