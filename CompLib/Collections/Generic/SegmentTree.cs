@@ -63,6 +63,7 @@
         /// <param name="n"></param>
         public void Update(int i, T n)
         {
+            Debug.Assert(0 <= i && i < _n);
             i += _size;
             _array[i] = n;
             while (i > 1)
@@ -96,6 +97,7 @@
         /// <returns></returns>
         public T Query(int left, int right)
         {
+            Debug.Assert(0 <= left && left <= right && right <= _n);
             return Query(left, right, 1, 0, _size);
         }
 
@@ -185,7 +187,11 @@
         public T this[int i]
         {
             set { Update(i, value); }
-            get { return _array[i + _n]; }
+            get
+            {
+                Debug.Assert(0 <= i && i < _n);
+                return _array[i + _n];
+            }
         }
     }
 }
