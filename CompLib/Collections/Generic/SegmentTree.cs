@@ -1,18 +1,23 @@
-namespace CompLib.Collections.Generic
+﻿namespace CompLib.Collections.Generic
 {
     using System;
 
     public class SegmentTree<T>
     {
-        // 制約に合った2の冪
-        private const int N = 1 << 21;
+        private readonly int N;
         private T[] _array;
 
         private T _identity;
         private Func<T, T, T> _operation;
 
-        public SegmentTree(Func<T, T, T> operation, T identity)
+        public SegmentTree(int n, Func<T, T, T> operation, T identity)
         {
+            N = 1;
+            while (N < n)
+            {
+                N *= 2;
+            }
+
             _identity = identity;
             _operation = operation;
             _array = new T[N * 2];
