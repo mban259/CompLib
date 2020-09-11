@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using CompLib.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -12,7 +12,7 @@ namespace UnitTest.Collections.Generic
         [TestMethod]
         public void Test()
         {
-            var st = new SegmentTree<long>((a, b) => a + b, 0);
+            var st = new SegmentTree<long>(5, (a, b) => a + b, 0);
             st[0] = 4;
             st[1] = 3;
             st[2] = 2;
@@ -24,7 +24,7 @@ namespace UnitTest.Collections.Generic
         [TestMethod]
         public void RandomTest()
         {
-            var st = new SegmentTree<long>(Math.Min, long.MaxValue);
+            var st = new SegmentTree<long>(N, Math.Min, long.MaxValue);
             var array = new long[N];
             for (int i = 0; i < N; i++)
             {
