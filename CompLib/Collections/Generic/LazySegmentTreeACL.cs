@@ -87,7 +87,7 @@
             }
             for (int i = _n; i < _size; i++)
             {
-                _d[i] = _e;
+                _d[i + _size] = _e;
             }
             for (int i = _size - 1; i >= 1; i--)
             {
