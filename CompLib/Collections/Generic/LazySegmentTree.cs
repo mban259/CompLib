@@ -1,10 +1,10 @@
-namespace CompLib.Collections.Generic
+﻿namespace CompLib.Collections.Generic
 {
     using System;
 
     public class LazySegmentTree<T>
     {
-        private const int N = 1 << 21;
+        private readonly int N;
         private readonly T[] _array;
         private readonly T[] _tmp;
         private readonly bool[] _flag;
@@ -17,14 +17,17 @@ namespace CompLib.Collections.Generic
         /// <summary>
         /// コンストラクタ updateIdentityで初期化
         /// </summary>
+        /// <param name="size">サイズ</param>
         /// <param name="operation">区間演算用の演算</param>
         /// <param name="identity">(T, operation)の単位元</param>
         /// <param name="multiplication">(T, operation)のスカラー乗算</param>
         /// <param name="update">区間更新用の演算</param>
         /// <param name="updateIdentity">(T, update)の左単位元</param>
-        public LazySegmentTree(Func<T, T, T> operation, T identity, Func<T, int, T> multiplication, Func<T, T, T> update,
+        public LazySegmentTree(int size, Func<T, T, T> operation, T identity, Func<T, int, T> multiplication, Func<T, T, T> update,
             T updateIdentity)
         {
+            N = 1;
+            while (N < size) N *= 2;
             _operation = operation;
             _identity = identity;
             _multiplication = multiplication;
@@ -49,6 +52,52 @@ namespace CompLib.Collections.Generic
 
             _flag = new bool[2 * N];
         }
+
+        /// <summary>
+        /// コンストラクタ 配列vで初期化
+        /// </summary>
+        /// <param name="v">元配列</param>
+        /// <param name="operation">区間演算用の演算</param>
+        /// <param name="identity">(T, operation)の単位元</param>
+        /// <param name="multiplication">(T, operation)のスカラー乗算</param>
+        /// <param name="update">区間更新用の演算</param>
+        /// <param name="updateIdentity">(T, update)の左単位元</param>
+        public LazySegmentTree(T[] v, Func<T, T, T> operation, T identity, Func<T, int, T> multiplication, Func<T, T, T> update,
+            T updateIdentity)
+        {
+            N = 1;
+            while (N < v.Length) N *= 2;
+            _operation = operation;
+            _identity = identity;
+            _multiplication = multiplication;
+            _update = update;
+            _updateIdentity = updateIdentity;
+            _array = new T[2 * N];
+
+            for (int i = 0; i < v.Length; i++)
+            {
+                _array[i + N] = v[i];
+            }
+            for (int i = v.Length; i < N; i++)
+            {
+                _array[i + N] = _updateIdentity;
+            }
+
+            for (int i = N - 1; i >= 1; i--)
+            {
+                _array[i] = _operation(_array[i * 2], _array[i * 2 + 1]);
+            }
+
+            _tmp = new T[2 * N];
+            for (int i = 1; i < 2 * N; i++)
+            {
+                _tmp[i] = _updateIdentity;
+            }
+
+            _flag = new bool[2 * N];
+        }
+
+
 
         private void Eval(int k, int l, int r)
         {
