@@ -51,16 +51,17 @@ namespace CompLib.Mathematics
         /// <param name="r"></param>
         /// <param name="m"></param>
         /// <returns></returns>
-        public static (long rem, long mod) CRT(params (long r, long m)[] ar)
+        public static (long rem, long mod) CRT(long[] r, long[] m)
         {
-            int n = ar.Length;
+            Debug.Assert(r.Length == m.Length);
+            int n = r.Length;
             long r0 = 0;
             long m0 = 1;
             for (int i = 0; i < n; i++)
             {
-                Debug.Assert(1 <= ar[i].m);
-                long r1 = SafeMod(ar[i].r, ar[i].m);
-                long m1 = ar[i].m;
+                Debug.Assert(1 <= m[i]);
+                long r1 = SafeMod(r[i], m[i]);
+                long m1 = m[i];
 
                 if (m0 < m1)
                 {
