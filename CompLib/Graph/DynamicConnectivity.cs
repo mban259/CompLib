@@ -312,8 +312,8 @@ namespace CompLib.Graph
                 return;
             }
 
-            if (t.Children[0] != null && t.Children[0].ChildExact) Go(t.Children[0], f);
-            else Go(t.Children[1], f);
+            if (t.Left != null && t.Left.ChildExact) Go(t.Left, f);
+            else Go(t.Right, f);
         }
 
 
@@ -342,8 +342,8 @@ namespace CompLib.Graph
                 return f(t.S);
             }
 
-            if (t.Children[0] != null && t.Children[0].ChildEdgeConnected) return Go2(t.Children[0], f);
-            else return Go2(t.Children[1], f);
+            if (t.Left != null && t.Left.ChildEdgeConnected) return Go2(t.Left, f);
+            else return Go2(t.Right, f);
         }
 
         // オイラーツアーの始点をvにする
@@ -373,13 +373,13 @@ namespace CompLib.Graph
             if (s == null) return t;
             if (t == null) return s;
             // 右端まで行く
-            while (s.Children[1] != null) s = s.Children[1];
+            while (s.Right != null) s = s.Right;
 
             // sを根にする
             Splay(s);
 
             // sの右の子をtにする
-            s.Children[1] = t;
+            s.Right = t;
             if (t != null) t.Parent = s;
             s.Update();
             return s;
@@ -401,9 +401,9 @@ namespace CompLib.Graph
         {
             Splay(s);
             // node以前
-            var t = s.Children[0];
+            var t = s.Left;
             if (t != null) t.Parent = null;
-            s.Children[0] = null;
+            s.Left = null;
             s.Update();
             return new PairNode(t, s);
         }
@@ -412,12 +412,12 @@ namespace CompLib.Graph
         private PairNode Split2(SplayTreeNode s)
         {
             Splay(s);
-            var t = s.Children[0];
-            var u = s.Children[1];
+            var t = s.Left;
+            var u = s.Right;
             if (t != null) t.Parent = null;
-            s.Children[0] = null;
+            s.Left = null;
             if (u != null) u.Parent = null;
-            s.Children[1] = null;
+            s.Right = null;
             s.Update();
             return new PairNode(t, u);
         }
@@ -467,16 +467,16 @@ namespace CompLib.Graph
                     // 親が根なら
 
                     // sが左?右回転:左回転
-                    Rotate(s, t.Children[0] == s ? 1 : 0);
+                    Rotate(s, t.Left == s);
                 }
                 else
                 {
                     // 2つ上
                     var u = t.Parent;
-                    int b = u.Children[0] == t ? 1 : 0;
+                    bool b = u.Left == t;
 
                     // ジグザグ
-                    if (t.Children[1 - b] == s)
+                    if ((b ? t.Left : t.Right) == s)
                     {
                         Rotate(t, b);
                         Rotate(s, b);
@@ -484,7 +484,7 @@ namespace CompLib.Graph
                     else
                     {
                         // まっすぐ
-                        Rotate(s, 1 - b);
+                        Rotate(s, !b);
                         Rotate(s, b);
                     }
                 }
@@ -492,21 +492,30 @@ namespace CompLib.Graph
         }
 
         // sを回転
-        private void Rotate(SplayTreeNode s, int b)
+        private void Rotate(SplayTreeNode s, bool b)
         {
             // 1つ上
             var x = s.Parent;
             // 2つ上
             var y = x.Parent;
-            if ((x.Children[1 - b] = s.Children[b]) != null) s.Children[b].Parent = x;
-            s.Children[b] = x;
+
+            if (b)
+            {
+                if ((x.Left = s.Right) != null) s.Right.Parent = x;
+                s.Right = x;
+            }
+            else
+            {
+                if ((x.Right = s.Left) != null) s.Left.Parent = x;
+                s.Left = x;
+            }
             x.Parent = s;
             x.Update();
             s.Update();
             if ((s.Parent = y) != null)
             {
-                if (y.Children[0] == x) y.Children[0] = s;
-                if (y.Children[1] == x) y.Children[1] = s;
+                if (y.Left == x) y.Left = s;
+                if (y.Right == x) y.Right = s;
                 y.Update();
             }
         }
@@ -524,15 +533,15 @@ namespace CompLib.Graph
         private void Go(SplayTreeNode s, int[] ar, ref int k)
         {
             if (s.Size == 0) return;
-            if (s.Children[0] != null) Go(s.Children[0], ar, ref k);
+            if (s.Left != null) Go(s.Left, ar, ref k);
             if (s.F == s.S) ar[k++] = s.F;
-            if (s.Children[1] != null) Go(s.Children[1], ar, ref k);
+            if (s.Right != null) Go(s.Right, ar, ref k);
         }
 
         public class SplayTreeNode
         {
             public int Size;
-            public SplayTreeNode[] Children;
+            public SplayTreeNode Left, Right;
             public SplayTreeNode Parent;
 
             // Eにある辺と繋がっている頂点か?
@@ -555,7 +564,8 @@ namespace CompLib.Graph
                 F = f;
                 S = s;
                 Size = F == S ? 1 : 0;
-                Children = new SplayTreeNode[2] { null, null };
+                Left = null;
+                Right = null;
                 Parent = null;
 
 
@@ -575,18 +585,18 @@ namespace CompLib.Graph
                 ChildExact = Exact;
                 Size = (F == S ? 1 : 0);
 
-                if (Children[0] != null)
+                if (Left != null)
                 {
-                    ChildEdgeConnected |= Children[0].ChildEdgeConnected;
-                    ChildExact |= Children[0].ChildExact;
-                    Size += Children[0].Size;
+                    ChildEdgeConnected |= Left.ChildEdgeConnected;
+                    ChildExact |= Left.ChildExact;
+                    Size += Left.Size;
                 }
 
-                if (Children[1] != null)
+                if (Right != null)
                 {
-                    ChildEdgeConnected |= Children[1].ChildEdgeConnected;
-                    ChildExact |= Children[1].ChildExact;
-                    Size += Children[1].Size;
+                    ChildEdgeConnected |= Right.ChildEdgeConnected;
+                    ChildExact |= Right.ChildExact;
+                    Size += Right.Size;
                 }
             }
         }
