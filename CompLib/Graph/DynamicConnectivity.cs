@@ -79,10 +79,8 @@ namespace CompLib.Graph
             if (s == t) return false;
             for (int i = 0; i < Dep; i++)
             {
-                E[i][s].Remove(t);
-                E[i][t].Remove(s);
-                if (E[i][s].Count == 0) F[i].EdgeConnectedUpdate(s, false);
-                if (E[i][t].Count == 0) F[i].EdgeConnectedUpdate(t, false);
+                if (E[i][s].Remove(t) && E[i][s].Count == 0) F[i].EdgeConnectedUpdate(s, false);
+                if (E[i][t].Remove(s) && E[i][t].Count == 0) F[i].EdgeConnectedUpdate(t, false);
             }
 
             for (int i = Dep - 1; i >= 0; i--)
@@ -296,7 +294,7 @@ namespace CompLib.Graph
         {
             var s = GetNode(v, v);
             Splay(s);
-            while (s?.ChildExact ?? false)
+            while (s != null && s.ChildExact)
             {
                 Go(s, f);
                 Splay(s);
@@ -314,7 +312,7 @@ namespace CompLib.Graph
                 return;
             }
 
-            if (t.Children[0]?.ChildExact ?? false) Go(t.Children[0], f);
+            if (t.Children[0] != null && t.Children[0].ChildExact) Go(t.Children[0], f);
             else Go(t.Children[1], f);
         }
 
@@ -344,7 +342,7 @@ namespace CompLib.Graph
                 return f(t.S);
             }
 
-            if (t.Children[0]?.ChildEdgeConnected ?? false) return Go2(t.Children[0], f);
+            if (t.Children[0] != null && t.Children[0].ChildEdgeConnected) return Go2(t.Children[0], f);
             else return Go2(t.Children[1], f);
         }
 
@@ -573,10 +571,23 @@ namespace CompLib.Graph
 
             public void Update()
             {
-                Size = (Children[0]?.Size ?? 0) + (F == S ? 1 : 0) + (Children[1]?.Size ?? 0);
-                ChildEdgeConnected = (Children[0]?.ChildEdgeConnected ?? false) | EdgeConnected |
-                                     (Children[1]?.ChildEdgeConnected ?? false);
-                ChildExact = (Children[0]?.ChildExact ?? false) | (Exact) | (Children[1]?.ChildExact ?? false);
+                ChildEdgeConnected = EdgeConnected;
+                ChildExact = Exact;
+                Size = (F == S ? 1 : 0);
+
+                if (Children[0] != null)
+                {
+                    ChildEdgeConnected |= Children[0].ChildEdgeConnected;
+                    ChildExact |= Children[0].ChildExact;
+                    Size += Children[0].Size;
+                }
+
+                if (Children[1] != null)
+                {
+                    ChildEdgeConnected |= Children[1].ChildEdgeConnected;
+                    ChildExact |= Children[1].ChildExact;
+                    Size += Children[1].Size;
+                }
             }
         }
 
