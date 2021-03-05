@@ -200,16 +200,13 @@ namespace CompLib.Graph
     public class EulerTourTree
     {
         public readonly int N;
-        private Dictionary<int, SplayTreeNode>[] Ptr;
+        private Dictionary<PairInt, SplayTreeNode> Ptr;
 
         public EulerTourTree(int n)
         {
             N = n;
-            Ptr = new Dictionary<int, SplayTreeNode>[N];
-            for (int i = 0; i < N; i++)
-            {
-                Ptr[i] = new Dictionary<int, SplayTreeNode>() { { i, new SplayTreeNode(i, i) } };
-            }
+            Ptr = new Dictionary<PairInt, SplayTreeNode>(new PairIntEC());
+            for (int i = 0; i < N; i++) Ptr[new PairInt(i, i)] = new SplayTreeNode(i, i);
         }
 
         // s,tが同じ木にあるか?
@@ -235,18 +232,18 @@ namespace CompLib.Graph
         public bool Disconnect(int v, int u)
         {
             SplayTreeNode o;
-            if (!Ptr[v].TryGetValue(u, out o)) return false;
+            if (!Ptr.TryGetValue(new PairInt(v, u), out o)) return false;
             var triple = Split(GetNode(v, u), GetNode(u, v));
             Merge(triple.First, triple.Third);
-            Ptr[u].Remove(v);
-            Ptr[v].Remove(u);
+            Ptr.Remove(new PairInt(v, u));
+            Ptr.Remove(new PairInt(u, v));
             return true;
         }
 
         public int Size(int v)
         {
             SplayTreeNode o;
-            if (!Ptr[v].TryGetValue(v, out o)) return 0;
+            if (!Ptr.TryGetValue(new PairInt(v, v), out o)) return 0;
             return Size(o);
         }
 
@@ -264,16 +261,14 @@ namespace CompLib.Graph
         public int[][] Groups()
         {
             List<int[]> result = new List<int[]>();
-            foreach (Dictionary<int, SplayTreeNode> map in Ptr)
+
+            foreach (var pair in Ptr)
             {
-                foreach (var pair in map)
+                var v = pair.Value;
+                // root
+                if (v.Parent == null)
                 {
-                    var v = pair.Value;
-                    // root
-                    if (v.Parent == null)
-                    {
-                        result.Add(NodeToArray(v));
-                    }
+                    result.Add(NodeToArray(v));
                 }
             }
 
@@ -357,10 +352,10 @@ namespace CompLib.Graph
         private SplayTreeNode GetNode(int f, int t)
         {
             SplayTreeNode o;
-            if (!Ptr[f].TryGetValue(t, out o))
+            if (!Ptr.TryGetValue(new PairInt(f, t), out o))
             {
                 o = new SplayTreeNode(f, t);
-                Ptr[f][t] = o;
+                Ptr[new PairInt(f, t)] = o;
             }
 
             return o;
@@ -624,6 +619,30 @@ namespace CompLib.Graph
         {
             First = f;
             Second = s;
+        }
+    }
+
+    public struct PairInt
+    {
+        public int First;
+        public int Second;
+        public PairInt(int f, int s)
+        {
+            First = f;
+            Second = s;
+        }
+    }
+
+    public class PairIntEC : EqualityComparer<PairInt>
+    {
+        public override bool Equals(PairInt x, PairInt y)
+        {
+            return x.First == y.First && x.Second == y.Second;
+        }
+
+        public override int GetHashCode(PairInt obj)
+        {
+            return obj.First ^ (obj.Second + -1640531527 + (obj.First << 6) + (obj.Second >> 2));
         }
     }
 }
