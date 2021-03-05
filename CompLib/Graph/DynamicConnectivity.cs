@@ -2,8 +2,6 @@ namespace CompLib.Graph
 {
     using System;
     using System.Collections.Generic;
-    using PairNode = Pair<EulerTourTree.SplayTreeNode, EulerTourTree.SplayTreeNode>;
-    using TripleNode = Triple<EulerTourTree.SplayTreeNode, EulerTourTree.SplayTreeNode, EulerTourTree.SplayTreeNode>;
     using System.Diagnostics;
 
     public class DynamicConnectivity
@@ -53,10 +51,8 @@ namespace CompLib.Graph
             }
             else
             {
-                E[0][s].Add(t);
-                E[0][t].Add(s);
-                if (E[0][s].Count == 1) F[0].EdgeConnectedUpdate(s, true);
-                if (E[0][t].Count == 1) F[0].EdgeConnectedUpdate(t, true);
+                if (E[0][s].Add(t) && E[0][s].Count == 1) F[0].EdgeConnectedUpdate(s, true);
+                if (E[0][t].Add(s) && E[0][t].Count == 1) F[0].EdgeConnectedUpdate(t, true);
                 return false;
             }
         }
@@ -148,22 +144,16 @@ namespace CompLib.Graph
 
                     foreach (int y in ls)
                     {
-                        E[i][x].Remove(y);
-                        E[i][y].Remove(x);
-                        if (E[i][x].Count == 0) F[i].EdgeConnectedUpdate(x, false);
-                        if (E[i][y].Count == 0) F[i].EdgeConnectedUpdate(y, false);
-                        E[i + 1][x].Add(y);
-                        E[i + 1][y].Add(x);
-                        if (E[i + 1][x].Count == 1) F[i + 1].EdgeConnectedUpdate(x, true);
-                        if (E[i + 1][y].Count == 1) F[i + 1].EdgeConnectedUpdate(y, true);
+                        if (E[i][x].Remove(y) && E[i][x].Count == 0) F[i].EdgeConnectedUpdate(x, false);
+                        if (E[i][y].Remove(x) && E[i][y].Count == 0) F[i].EdgeConnectedUpdate(y, false);
+                        if (E[i + 1][x].Add(y) && E[i + 1][x].Count == 1) F[i + 1].EdgeConnectedUpdate(x, true);
+                        if (E[i + 1][y].Add(x) && E[i + 1][y].Count == 1) F[i + 1].EdgeConnectedUpdate(y, true);
                     }
 
                     if (yy != -1)
                     {
-                        E[i][x].Remove(yy);
-                        E[i][yy].Remove(x);
-                        if (E[i][x].Count == 0) F[i].EdgeConnectedUpdate(x, false);
-                        if (E[i][yy].Count == 0) F[i].EdgeConnectedUpdate(yy, false);
+                        if (E[i][x].Remove(yy) && E[i][x].Count == 0) F[i].EdgeConnectedUpdate(x, false);
+                        if (E[i][yy].Remove(x) && E[i][yy].Count == 0) F[i].EdgeConnectedUpdate(yy, false);
                         for (int j = 0; j <= i; j++) F[j].Connect(x, yy);
                         return true;
                     }
@@ -543,22 +533,21 @@ namespace CompLib.Graph
 
         public class SplayTreeNode
         {
-            public int Count { get; private set; }
-            public int Size { get; private set; }
+            public int Size;
             public SplayTreeNode[] Children;
             public SplayTreeNode Parent;
 
             // Eにある辺と繋がっている頂点か?
-            public bool EdgeConnected { get; set; }
+            public bool EdgeConnected;
 
             // 部分木にEdgeConnected = trueがあるか?
-            public bool ChildEdgeConnected { get; set; }
+            public bool ChildEdgeConnected;
 
             // 一度も見てない辺か? (F_iにいるlevel=iの辺か?)
-            public bool Exact { get; set; }
+            public bool Exact;
 
             // 部分木にExact=trueがあるか?
-            public bool ChildExact { get; private set; }
+            public bool ChildExact;
 
 
             public int F, S;
@@ -567,7 +556,6 @@ namespace CompLib.Graph
             {
                 F = f;
                 S = s;
-                Count = 1;
                 Size = F == S ? 1 : 0;
                 Children = new SplayTreeNode[2] { null, null };
                 Parent = null;
@@ -585,7 +573,6 @@ namespace CompLib.Graph
 
             public void Update()
             {
-                Count = (Children[0]?.Count ?? 0) + 1 + (Children[1]?.Count ?? 0);
                 Size = (Children[0]?.Size ?? 0) + (F == S ? 1 : 0) + (Children[1]?.Size ?? 0);
                 ChildEdgeConnected = (Children[0]?.ChildEdgeConnected ?? false) | EdgeConnected |
                                      (Children[1]?.ChildEdgeConnected ?? false);
@@ -596,13 +583,11 @@ namespace CompLib.Graph
         #endregion
     }
 
-    public struct Triple<F, S, T>
+    public struct TripleNode
     {
-        public readonly F First;
-        public readonly S Second;
-        public readonly T Third;
+        public readonly EulerTourTree.SplayTreeNode First, Second, Third;
 
-        public Triple(F f, S s, T t)
+        public TripleNode(EulerTourTree.SplayTreeNode f, EulerTourTree.SplayTreeNode s, EulerTourTree.SplayTreeNode t)
         {
             First = f;
             Second = s;
@@ -610,12 +595,11 @@ namespace CompLib.Graph
         }
     }
 
-    public struct Pair<F, S>
+    public struct PairNode
     {
-        public readonly F First;
-        public readonly S Second;
+        public readonly EulerTourTree.SplayTreeNode First, Second;
 
-        public Pair(F f, S s)
+        public PairNode(EulerTourTree.SplayTreeNode f, EulerTourTree.SplayTreeNode s)
         {
             First = f;
             Second = s;
