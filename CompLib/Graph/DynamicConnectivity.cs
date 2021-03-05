@@ -201,12 +201,14 @@ namespace CompLib.Graph
     {
         public readonly int N;
         private Dictionary<PairInt, SplayTreeNode> Ptr;
+        private SplayTreeNode[] V;
 
         public EulerTourTree(int n)
         {
             N = n;
             Ptr = new Dictionary<PairInt, SplayTreeNode>(new PairIntEC());
-            for (int i = 0; i < N; i++) Ptr[new PairInt(i, i)] = new SplayTreeNode(i, i);
+            V = new SplayTreeNode[N];
+            for (int i = 0; i < N; i++) V[i] = new SplayTreeNode(i, i);
         }
 
         // s,tが同じ木にあるか?
@@ -242,9 +244,7 @@ namespace CompLib.Graph
 
         public int Size(int v)
         {
-            SplayTreeNode o;
-            if (!Ptr.TryGetValue(new PairInt(v, v), out o)) return 0;
-            return Size(o);
+            return Size(V[v]);
         }
 
         private int Size(SplayTreeNode v)
@@ -266,6 +266,14 @@ namespace CompLib.Graph
             {
                 var v = pair.Value;
                 // root
+                if (v.Parent == null)
+                {
+                    result.Add(NodeToArray(v));
+                }
+            }
+
+            foreach (var v in V)
+            {
                 if (v.Parent == null)
                 {
                     result.Add(NodeToArray(v));
@@ -351,6 +359,7 @@ namespace CompLib.Graph
         // 辺(f,t)のNodeを取得 無いなら作る
         private SplayTreeNode GetNode(int f, int t)
         {
+            if (f == t) return V[f];
             SplayTreeNode o;
             if (!Ptr.TryGetValue(new PairInt(f, t), out o))
             {
