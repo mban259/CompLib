@@ -118,7 +118,7 @@ namespace CompLib.Algorithm
             for (int i = 0; i < n; i++) a2[i] = a[i];
             Butterfly(a2, h);
             ModInt<T>[] b2 = new ModInt<T>[z];
-            for (int j = 0; j < m; j++) b2[i] = b[i];
+            for (int i = 0; i < m; i++) b2[i] = b[i];
             Butterfly(b2, h);
 
             for (int i = 0; i < z; i++)
