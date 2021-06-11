@@ -22,6 +22,8 @@ namespace CompLib.Algorithm
                 e *= e;
                 ie *= ie;
             }
+            sumIE = new ModInt<T>[cnt2 - 1];
+            sumE = new ModInt<T>[cnt2 - 1];
             ModInt<T> iNow = 1;
             ModInt<T> now = 1;
             for (int i = 0; i <= cnt2 - 2; i++)
