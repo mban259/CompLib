@@ -115,10 +115,10 @@ namespace CompLib.Algorithm
             int z = 1 << h;
 
             ModInt<T>[] a2 = new ModInt<T>[z];
-            Array.Copy(a, a2, n);
+            for (int i = 0; i < n; i++) a2[i] = a[i];
             Butterfly(a2, h);
             ModInt<T>[] b2 = new ModInt<T>[z];
-            Array.Copy(b, b2, m);
+            for (int j = 0; j < m; j++) b2[i] = b[i];
             Butterfly(b2, h);
 
             for (int i = 0; i < z; i++)
