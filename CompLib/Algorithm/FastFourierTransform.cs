@@ -293,30 +293,25 @@ namespace CompLib.Algorithm
 
             return new ModInt3(ret1, ret2, ret3);
         }
-
+        const ulong M1M2 = Mod1 * Mod2;
+        const ulong M1M3 = Mod1 * Mod3;
+        const ulong M2M3 = Mod2 * Mod3;
+        const ulong M1M2M3 = unchecked((ulong)Mod1 * Mod2 * Mod3);
+        // internal::inv_gcd(MOD2 * MOD3, MOD1).second;
+        const ulong I1 = 190329765;
+        // Mod2 * Mod3, Mod2
+        const ulong I2 = 58587104;
+        // Mod1* Mod2, Mod3
+        const ulong I3 = 187290749;
 
         public long ToLong()
         {
-            const ulong M1 = Mod1;
-            const ulong M2 = Mod2;
-            const ulong M3 = Mod3;
-            const ulong M1M2 = M1 * M2;
-            const ulong M1M3 = M1 * M3;
-            const ulong M2M3 = M2 * M3;
-            const ulong M1M2M3 = unchecked(M1 * M2 * M3);
-            // internal::inv_gcd(MOD2 * MOD3, MOD1).second;
-            const ulong i1 = 190329765;
-            // Mod2 * Mod3, Mod2
-            const ulong i2 = 58587104;
-            // Mod1* Mod2, Mod3
-            const ulong i3 = 187290749;
-
             ulong x = 0;
             unchecked
             {
-                x += (ulong)num1 * i1 % Mod1 * M2M3;
-                x += (ulong)num2 * i2 % Mod2 * M1M3;
-                x += (ulong)num3 * i3 % Mod3 * M1M2;
+                x += (ulong)num1 * I1 % Mod1 * M2M3;
+                x += (ulong)num2 * I2 % Mod2 * M1M3;
+                x += (ulong)num3 * I3 % Mod3 * M1M2;
 
                 long m = (long)x % Mod1;
                 if (m < 0) m += Mod1;
