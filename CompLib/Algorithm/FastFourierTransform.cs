@@ -1,14 +1,137 @@
-using System;
-using CompLib.Internal;
-using CompLib.Mathematics;
-
 namespace CompLib.Algorithm
 {
+    using System;
     static class FastFourierTransform
     {
+        private static readonly ModInt3[] SumE, SumIE;
+        private static readonly int[] RevBSF;
         static FastFourierTransform()
         {
-            
+            const int cnt2 = 24;
+            var e = new ModInt3(739831874, 59049, 320192759);
+            var ie = ModInt3.Inverse(e);
+            var es = new ModInt3[cnt2 - 1];
+            var ies = new ModInt3[cnt2 - 1];
+            for (int i = cnt2; i >= 2; i--)
+            {
+                es[i - 2] = e;
+                ies[i - 2] = ie;
+                e *= e;
+                ie *= ie;
+            }
+            SumE = new ModInt3[cnt2 - 1];
+            SumIE = new ModInt3[cnt2 - 1];
+            ModInt3 iNow = 1;
+            ModInt3 now = 1;
+            for (int i = 0; i <= cnt2 - 2; i++)
+            {
+                SumIE[i] = ies[i] * iNow;
+                SumE[i] = es[i] * now;
+                now *= ies[i];
+                iNow *= es[i];
+            }
+
+            const int z = 1 << cnt2;
+            RevBSF = new int[z];
+            for (int i = 0; i < z; i++)
+            {
+                int x = 0;
+                while ((i & (1 << x)) != 0) x++;
+                RevBSF[i] = x;
+            }
+        }
+
+        public static void Butterfly(ModInt3[] a, int h)
+        {
+            for (int ph = 1; ph <= h; ph++)
+            {
+                int w = 1 << (ph - 1);
+                int p = 1 << (h - ph);
+
+                ModInt3 now = 1;
+                for (int s = 0; s < w; s++)
+                {
+                    int offset = s << (h - ph + 1);
+                    for (int i = 0; i < p; i++)
+                    {
+                        var l = a[i + offset];
+                        var r = a[i + offset + p] * now;
+                        a[i + offset] = l + r;
+                        a[i + offset + p] = l - r;
+                    }
+                    now *= SumE[RevBSF[s]];
+                }
+            }
+        }
+
+        public static void ButterflyInv(ModInt3[] a, int h)
+        {
+            for (int ph = h; ph >= 1; ph--)
+            {
+                int w = 1 << (ph - 1);
+                int p = 1 << (h - ph);
+                ModInt3 iNow = 1;
+                for (int s = 0; s < w; s++)
+                {
+                    int offset = s << (h - ph + 1);
+                    for (int i = 0; i < p; i++)
+                    {
+                        var l = a[i + offset];
+                        var r = a[i + offset + p];
+                        a[i + offset] = l + r;
+                        a[i + offset + p] = (l - r) * iNow;
+                    }
+                    iNow *= SumIE[RevBSF[s]];
+                }
+            }
+        }
+
+        public static long[] Convolution(long[] a, long[] b)
+        {
+            int n = a.Length;
+            int m = b.Length;
+            if (n == 0 || m == 0) return Array.Empty<long>();
+            if (n <= 60 || m <= 60)
+            {
+                long[] c = new long[n + m - 1];
+                for (int i = 0; i < n; i++)
+                {
+                    for (int j = 0; j < m; j++)
+                    {
+                        c[i + j] += a[i] * b[j];
+                    }
+                }
+                return c;
+            }
+
+            int h = CeilPow2(n + m - 1);
+            int z = 1 << h;
+
+            ModInt3[] a2 = new ModInt3[z];
+            for (int i = 0; i < n; i++) a2[i] = a[i];
+            Butterfly(a2, h);
+            ModInt3[] b2 = new ModInt3[z];
+            for (int i = 0; i < m; i++) b2[i] = b[i];
+            Butterfly(b2, h);
+            for (int i = 0; i < z; i++)
+            {
+                a2[i] *= b2[i];
+            }
+            ButterflyInv(a2, h);
+            ModInt3 iz = ModInt3.Inverse(z);
+            long[] ret = new long[n + m - 1];
+            for (int i = 0; i < n + m - 1; i++)
+            {
+                ret[i] = (a2[i] * iz).ToLong();
+            }
+            return ret;
+        }
+
+        private static int CeilPow2(int n)
+        {
+            int x = 0;
+            while ((1 << x) < n) x++;
+            return x;
         }
     }
 
