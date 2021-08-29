@@ -94,5 +94,66 @@ namespace CompLib.Algorithm
         {
             return TernarySearch(begin, end, f, Comparer<T>.Default.Compare);
         }
+
+        /// <summary>
+        /// 三分探索 f(x)が最大になる (f(x), x)を返す
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="l"></param>
+        /// <param name="r"></param>
+        /// <param name="f"></param>
+        /// <param name="cmp"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static (T value, double x) TernarySearchD<T>(double l, double r, Func<double, T> f, Comparison<T> cmp)
+        {
+            double revPhi = 2 / (1 + Math.Sqrt(5));
+
+            double m1 = r - (r - l) * revPhi;
+            double m2 = l + (r - l) * revPhi;
+
+            T f1 = f(m1);
+            T f2 = f(m2);
+
+            for (int i = 0; i < 100; i++)
+            {
+                if (cmp(f1, f2) >= 0)
+                {
+                    r = m2;
+
+                    m2 = m1;
+                    f2 = f1;
+
+                    m1 = r - (r - l) * revPhi;
+                    f1 = f(m1);
+                }
+                else
+                {
+                    l = m1;
+
+                    m1 = m2;
+                    f1 = f2;
+
+                    m2 = l + (r - l) * revPhi;
+                    f2 = f(m2);
+                }
+            }
+
+            return (f1, m1);
+        }
+
+        /// <summary>
+        /// 三分探索 f(x)が最大になる (f(x), x)を返す
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="l"></param>
+        /// <param name="r"></param>
+        /// <param name="f"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static (T value, double x) TernarySearchD<T>(double l, double r, Func<double, T> f)
+        {
+            return TernarySearchD(l, r, f, Comparer<T>.Default.Compare);
+        }
     }
 }
