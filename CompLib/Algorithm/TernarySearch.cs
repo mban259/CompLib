@@ -16,7 +16,7 @@ namespace CompLib.Algorithm
         /// <param name="cmp"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static (T value, long idx) TernarySearch<T>(long begin, long end, Func<long, T> f, Comparison<T> cmp)
+        public static (T value, long idx) TernarySearchL<T>(long begin, long end, Func<long, T> f, Comparison<T> cmp)
         {
             Debug.Assert(end - begin >= 1);
             if (end - begin == 1)
@@ -60,9 +60,9 @@ namespace CompLib.Algorithm
         /// <param name="f"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static (T value, long idx) TernarySearch<T>(long begin, long end, Func<long, T> f)
+        public static (T value, long idx) TernarySearchL<T>(long begin, long end, Func<long, T> f)
         {
-            return TernarySearch(begin, end, f, Comparer<T>.Default.Compare);
+            return TernarySearchL(begin, end, f, Comparer<T>.Default.Compare);
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace CompLib.Algorithm
         /// <returns></returns>
         public static (T value, int idx) TernarySearch<T>(int begin, int end, Func<int, T> f, Comparison<T> cmp)
         {
-            var (value, idx) = TernarySearch((long)begin, (long)end, (x) => f((int)x), cmp);
+            var (value, idx) = TernarySearchL(begin, end, (x) => f((int)x), cmp);
             return (value, (int)idx);
         }
 
