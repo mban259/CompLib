@@ -4,18 +4,80 @@ namespace CompLib.Persistent
     using System.Collections.Generic;
     public class PersistentArray<T>
     {
-        private readonly List<Node> _roots;
-        private Node _current;
+        private readonly List<(T item, int ver, int l, int r)> _nodes;
+        private readonly List<int> _roots;
+        private int _cur;
         public PersistentArray()
         {
-            _roots = new List<Node>();
-            _current = new Node(_roots.Count);
+            _cur = 0;
+            _nodes = new List<(T item, int ver, int l, int r)>() { (default(T), 0, -1, -1) };
+            _roots = new List<int>();
         }
 
         public T this[int i]
         {
-            get { return _current.Get(i); }
-            set { _current.Set(i, value); }
+            get { return GetItem(_cur, i); }
+            set { SetItem(_cur, i, value); }
+        }
+
+        private T GetItem(int cur, int i)
+        {
+            while (i != 0)
+            {
+                cur = i % 2 == 0 ? _nodes[cur].l : _nodes[cur].r;
+                i = (i - 1) >> 1;
+                if (cur == -1) return default(T);
+            }
+            return _nodes[cur].item;
+        }
+
+        private void SetItem(int cur, int i, T item)
+        {
+            while (i != 0)
+            {
+                (T curItem, int curVer, int curL, int curR) = _nodes[cur];
+
+                if (i % 2 == 0)
+                {
+                    // l
+                    if (curL == -1)
+                    {
+                        _nodes.Add((default(T), Version, -1, -1));
+                        curL = _nodes.Count - 1;
+                        _nodes[cur] = (curItem, curVer, curL, curR);
+                    }
+                    else if (_nodes[curL].ver != Version)
+                    {
+                        (T toItem, _, int toL, int toR) = _nodes[curL];
+                        _nodes.Add((toItem, Version, toL, toR));
+                        curL = _nodes.Count - 1;
+                        _nodes[cur] = (curItem, curVer, curL, curR);
+                    }
+                    cur = curL;
+                    i = (i - 1) >> 1;
+                }
+                else
+                {
+                    if (curR == -1)
+                    {
+                        _nodes.Add((default(T), Version, -1, -1));
+                        curR = _nodes.Count - 1;
+                        _nodes[cur] = (curItem, curVer, curL, curR);
+                    }
+                    else if (_nodes[curR].ver != Version)
+                    {
+                        (T toItem, _, int toL, int toR) = _nodes[curR];
+                        _nodes.Add((toItem, Version, toL, toR));
+                        curR = _nodes.Count - 1;
+                        _nodes[cur] = (curItem, curVer, curL, curR);
+                    }
+                    cur = curR;
+                    i = (i - 1) >> 1;
+                }
+            }
+
+            (_, int tmpVer2, int tmpL2, int tmpR2) = _nodes[cur];
+            _nodes[cur] = (item, tmpVer2, tmpL2, tmpR2);
         }
 
         /// <summary>
@@ -26,17 +88,19 @@ namespace CompLib.Persistent
         /// <returns></returns>
         public T Get(int ver, int i)
         {
-            return _roots[ver].Get(i);
+            return GetItem(_roots[ver], i);
         }
 
         /// <summary>
-        /// 配列を保存し、バージョンを返す
+        /// 配列を保存し、バージョンをす
         /// </summary>
         /// <returns></returns>
         public int Save()
         {
-            _roots.Add(_current);
-            _current = _current.Copy(_roots.Count);
+            (T curItem, _, int curL, int curR) = _nodes[_cur];
+            _roots.Add(_cur);
+            _nodes.Add((curItem, Version, curL, curR));
+            _cur = _nodes.Count - 1;
             return _roots.Count - 1;
         }
 
@@ -46,7 +110,9 @@ namespace CompLib.Persistent
         /// <param name="ver">復元するバージョン</param>
         public void Restore(int ver)
         {
-            _current = _roots[ver].Copy(Version);
+            (T curItem, _, int curL, int curR) = _nodes[_roots[ver]];
+            _nodes.Add((curItem, Version, curL, curR));
+            _cur = _nodes.Count - 1;
         }
 
         public int Version
