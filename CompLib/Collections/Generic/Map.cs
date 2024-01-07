@@ -16,16 +16,28 @@ namespace CompLib.Collections.Generic
 
         private Random _random;
 
+        /// <summary>
+        /// 連想配列
+        /// </summary>
+        /// <param name="comparison">keyの比較 狭義弱順序</param>
         public Map(Comparison<TKey> comparison)
         {
             _random = new Random();
             _comparison = comparison;
         }
 
+        /// <summary>
+        /// 連想配列
+        /// </summary>
+        /// <param name="comparison">keyの比較 狭義弱順序</param>
         public Map(IComparer<TKey> comparer) : this(comparer.Compare)
         {
         }
 
+        
+        /// <summary>
+        /// 連想配列
+        /// </summary>
         public Map() : this(Comparer<TKey>.Default)
         {
         }
@@ -226,7 +238,7 @@ namespace CompLib.Collections.Generic
                 return false;
             }
 
-            if (key.Equals(t.Key))
+            if(_comparison(key,t.Key) == 0)
             {
                 Merge(out t, t.Left, t.Right);
                 return true;
@@ -314,7 +326,7 @@ namespace CompLib.Collections.Generic
                 }
                 else
                 {
-                    if (key.Equals(n.Key))
+                    if(_comparison(key,n.Key) == 0)
                     {
                         return true;
                     }
