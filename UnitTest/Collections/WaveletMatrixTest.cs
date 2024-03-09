@@ -130,5 +130,35 @@ namespace UnitTest.Collections
                 Assert.AreEqual(expect, wm.Rank(right, num));
             }
         }
+
+        [TestMethod]
+        public void SelectTest()
+        {
+            var rnd = new Random();
+            const int Len = 100000;
+            var array = new long[Len];
+            for (int i = 0; i < Len; i++)
+            {
+                array[i] = rnd.Next(1000);
+            }
+
+            var map = new Dictionary<long, List<int>>();
+            for (int i = 0; i < Len; i++)
+            {
+                if (!map.TryGetValue(array[i], out _)) map[array[i]] = new List<int>();
+                map[array[i]].Add(i);
+            }
+
+            var wm = new WaveletMatrix(array);
+
+
+            foreach ((long num, var idxs) in map)
+            {
+                for (int i = 0; i < idxs.Count; i++)
+                {
+                    Assert.AreEqual(idxs[i], wm.Select(i, num));
+                }
+            }
+        }
     }
 }

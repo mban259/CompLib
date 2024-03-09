@@ -108,6 +108,27 @@ namespace CompLib.Collections
             return Rank(end, n) - Rank(begin, n);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int Select(int i, Num n)
+        {
+            int left;
+            if (!_leftMap.TryGetValue(n, out left)) throw new IndexOutOfRangeException();
+
+            i += left;
+            for (int b = 0; b < H; b++)
+            {
+                if (((n >> b) & 1) != 0)
+                {
+                    i = _bv[b].Select1(i - _count0[b] + 1);
+                }
+                else
+                {
+                    i = _bv[b].Select0(i + 1);
+                }
+            }
+            return i;
+        }
+
         public Num this[int i]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
