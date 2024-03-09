@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CompLib.Collections;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace UnitTest.Collections
 {
@@ -158,6 +159,38 @@ namespace UnitTest.Collections
                 {
                     Assert.AreEqual(idxs[i], wm.Select(i, num));
                 }
+            }
+        }
+
+
+        [TestMethod]
+        public void QuantileTest()
+        {
+            var rnd = new Random();
+            const int Len = 100000;
+            var array = new long[Len];
+            for (int i = 0; i < Len; i++)
+            {
+                array[i] = rnd.Next(1000);
+            }
+
+
+
+            var wm = new WaveletMatrix(array);
+
+
+            for (int i = 0; i < 1000; i++)
+            {
+                int begin = rnd.Next(Len);
+                int end = rnd.Next(Len);
+                if (end < begin) (begin, end) = (end, begin);
+
+                int r = rnd.Next(end - begin);
+
+                var sub = array.AsSpan(begin, end - begin).ToArray();
+                Array.Sort(sub);
+
+                Assert.AreEqual(sub[r], wm.Quantile(begin, end, r));
             }
         }
     }

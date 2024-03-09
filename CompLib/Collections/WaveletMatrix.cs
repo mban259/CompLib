@@ -129,6 +129,30 @@ namespace CompLib.Collections
             return i;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Num Quantile(int begin, int end, int r)
+        {
+            Num ans = 0;
+            for (int b = H - 1; b >= 0; b--)
+            {
+                int rank0 = _bv[b].Rank0(begin, end);
+                if (r < rank0)
+                {
+                    begin = _bv[b].Rank0(begin);
+                    end = _bv[b].Rank0(end);
+                }
+                else
+                {
+                    ans |= (Num)1 << b;
+                    begin = _count0[b] + _bv[b].Rank1(begin);
+                    end = _count0[b] + _bv[b].Rank1(end);
+                    r = r - rank0;
+                }
+            }
+
+            return ans;
+        }
+
         public Num this[int i]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
