@@ -16,6 +16,9 @@ namespace CompLib.Collections
         BitVector[] _bv;
         int[] _count0;
 
+        Dictionary<Num, int> _leftMap;
+
+
         public WaveletMatrix(Num[] nums, int h = 31)
         {
             H = h;
@@ -49,6 +52,15 @@ namespace CompLib.Collections
                 (curNums, nextNums) = (nextNums, curNums);
                 ones.Clear();
             }
+
+            _leftMap = new Dictionary<Num, int>();
+            for (int i = 0; i < Count; i++)
+            {
+                if (i == 0 || curNums[i - 1] != curNums[i])
+                {
+                    _leftMap[curNums[i]] = i;
+                }
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -68,6 +80,32 @@ namespace CompLib.Collections
                 }
             }
             return ans;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int Rank(int end, Num n)
+        {
+            int left;
+            if (!_leftMap.TryGetValue(n, out left)) return 0;
+            for (int b = H - 1; b >= 0; b--)
+            {
+                if (((n >> b) & 1) != 0)
+                {
+                    end = _count0[b] + _bv[b].Rank1(end);
+                }
+                else
+                {
+                    end = _bv[b].Rank0(end);
+                }
+            }
+
+            return end - left;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int Rank(int begin, int end, Num n)
+        {
+            return Rank(end, n) - Rank(begin, n);
         }
 
         public Num this[int i]

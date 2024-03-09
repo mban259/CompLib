@@ -101,5 +101,34 @@ namespace UnitTest.Collections
                 Assert.AreEqual(array[i], wm[i]);
             }
         }
+
+        [TestMethod]
+        public void RankTest()
+        {
+            var rnd = new Random();
+            const int Len = 1000;
+            var array = new long[Len];
+            for (int i = 0; i < Len; i++)
+            {
+                array[i] = rnd.Next(10);
+            }
+
+            var wm = new WaveletMatrix(array);
+
+
+            for (int i = 0; i < 10000; i++)
+            {
+                int right = rnd.Next(Len + 1);
+                int num = rnd.Next(10);
+
+                int expect = 0;
+                for (int j = 0; j < right; j++)
+                {
+                    if (array[j] == num) expect++;
+                }
+
+                Assert.AreEqual(expect, wm.Rank(right, num));
+            }
+        }
     }
 }
