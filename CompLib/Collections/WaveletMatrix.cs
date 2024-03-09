@@ -1,44 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace CompLib.Collections
 {
-    using Num = System.Int32;
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Runtime.CompilerServices;
+    using Num = System.Int64;
     public class WaveletMatrix
     {
 
-        const int H = 31;
+        private readonly int H;
         public readonly int Count;
 
         BitVector[] _bv;
         int[] _count0;
 
-        public WaveletMatrix(Num[] nums)
+        public WaveletMatrix(Num[] nums, int h = 31)
         {
+            H = h;
             Count = nums.Length;
             _bv = new BitVector[H];
             _count0 = new int[H];
-
+            var curNums = new Num[Count];
+            Array.Copy(nums, curNums, Count);
             var nextNums = new Num[Count];
             var ones = new List<Num>();
-
             for (int b = H - 1; b >= 0; b--)
             {
                 var bits = new bool[Count];
                 for (int i = 0; i < Count; i++)
                 {
-                    if ((nums[i] & (1L << b)) == 0)
+                    if ((curNums[i] & ((Num)1 << b)) == 0)
                     {
-                        nextNums[_count0[b]++] = nums[i];
+                        nextNums[_count0[b]++] = curNums[i];
                     }
                     else
                     {
-                        ones.Add(nums[i]);
+                        ones.Add(curNums[i]);
                         bits[i] = true;
                     }
                 }
@@ -47,7 +46,7 @@ namespace CompLib.Collections
                 {
                     nextNums[_count0[b] + i] = ones[i];
                 }
-                (nums, nextNums) = (nextNums, nums);
+                (curNums, nextNums) = (nextNums, curNums);
                 ones.Clear();
             }
         }
@@ -55,7 +54,20 @@ namespace CompLib.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Num Get(int i)
         {
-            return 0;
+            Num ans = 0;
+            for (int b = H - 1; b >= 0; b--)
+            {
+                if (_bv[b][i])
+                {
+                    ans |= (Num)1 << b;
+                    i = _count0[b] + _bv[b].Rank1(i);
+                }
+                else
+                {
+                    i = _bv[b].Rank0(i);
+                }
+            }
+            return ans;
         }
 
         public Num this[int i]

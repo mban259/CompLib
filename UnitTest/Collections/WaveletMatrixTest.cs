@@ -82,5 +82,24 @@ namespace UnitTest.Collections
             }
         }
 
+
+        [TestMethod]
+        public void GetTest()
+        {
+            var rnd = new Random();
+            const int Len = 100000;
+            var array = new long[Len];
+            for (int i = 0; i < Len; i++)
+            {
+                array[i] = rnd.Next();
+            }
+
+            var wm = new WaveletMatrix(array);
+
+            for (int i = 0; i < Len; i++)
+            {
+                Assert.AreEqual(array[i], wm[i]);
+            }
+        }
     }
 }
