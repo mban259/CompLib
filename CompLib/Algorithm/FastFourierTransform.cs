@@ -1,316 +1,268 @@
+
+
 namespace CompLib.Algorithm
 {
-    using Mathematics;
     using System;
-    using System.Numerics;
+    using CompLib.Mathematics;
 
+    // https://bitbucket.org/camypaper/complib
     public static class FastFourierTransform
     {
-        private const int E = 26;
-        public static readonly ModInt O = new ModInt(18769, 136);
-        public static readonly ModInt InvO = new ModInt(137728885, 839354248);
-
-        // Z[i] 1の原始2^i乗根
-        public static readonly ModInt[] Z;
-        public static readonly ModInt[] InvZ;
-
-        static FastFourierTransform()
-        {
-            Z = new ModInt[E + 1];
-            InvZ = new ModInt[E + 1];
-            Z[E] = O; // ZE☆
-            InvZ[E] = InvO;
-            for (int i = E - 1; i >= 0; i--)
-            {
-                Z[i] = Z[i + 1] * Z[i + 1];
-                InvZ[i] = InvZ[i + 1] * InvZ[i + 1];
-            }
-        }
+        private const int NaiveThreshold = 60;
+        private const int MaxTransformLength = 1 << 23;
+        private const long PrimitiveRoot = 3;
 
         /// <summary>
-        /// a,bからc[k]=Σ(a[i]*b[k-i])を求める
+        /// Computes the coefficients of the product of two polynomials modulo 998244353.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static long[] Convolution(long[] a, long[] b)
+        /// <param name="a">The coefficients of the first polynomial, in ascending order.</param>
+        /// <param name="b">The coefficients of the second polynomial, in ascending order.</param>
+        /// <returns>The <c>a.Length + b.Length - 1</c> coefficients of the product.</returns>
+        public static ModInt[] Convolution(ModInt[] a, ModInt[] b)
         {
-            int len = 1;
-            int l = 0;
-            while (len < (a.Length + b.Length))
-            {
-                l++;
-                len *= 2;
-            }
+            if (a == null) throw new ArgumentNullException(nameof(a));
+            if (b == null) throw new ArgumentNullException(nameof(b));
+            if (a.Length == 0 || b.Length == 0) return Array.Empty<ModInt>();
 
-            var mA = new ModInt[len];
-            for (int i = 0; i < a.Length; i++)
-            {
-                mA[i] = a[i];
-            }
+            long resultLength = (long)a.Length + b.Length - 1;
+            if (resultLength > MaxTransformLength)
+                throw new ArgumentException("The convolution exceeds the maximum supported transform length.");
 
-            var mB = new ModInt[len];
-            for (int i = 0; i < b.Length; i++)
-            {
-                mB[i] = b[i];
-            }
+            int outputLength = (int)resultLength;
+            if (Math.Min(a.Length, b.Length) <= NaiveThreshold)
+                return ConvolutionNaive(a, b, outputLength);
 
-            ModInt[] hatG = Transform(mA, l, false);
-            ModInt[] hatH = Transform(mB, l, false);
-            ModInt[] hatF = new ModInt[len];
-            for (int i = 0; i < len; i++)
-            {
-                hatF[i] = hatG[i] * hatH[i];
-            }
+            int transformLength = 1;
+            while (transformLength < outputLength)
+                transformLength <<= 1;
 
-            ModInt[] nF = Transform(hatF, l, true);
+            var fa = new ModInt[transformLength];
+            var fb = new ModInt[transformLength];
+            Array.Copy(a, fa, a.Length);
+            Array.Copy(b, fb, b.Length);
 
-            ModInt invLen = ModInt.Inverse(len);
-            long[] f = new long[len];
-            for (int i = 0; i < len; i++)
-            {
-                f[i] = (nF[i] * invLen).Num;
-            }
+            Transform(fa, inverse: false);
+            Transform(fb, inverse: false);
+            for (int i = 0; i < transformLength; i++)
+                fa[i] *= fb[i];
+            Transform(fa, inverse: true);
 
-            return f;
+            
+            ModInt inverseLength = ModInt.Inverse(transformLength);
+            for (int i = 0; i < transformLength; i++)
+                fa[i] *= inverseLength;
+            
+
+            var result = new ModInt[outputLength];
+            Array.Copy(fa, result, outputLength);
+            return result;
         }
 
-        private static ModInt[] Transform(ModInt[] a, int l, bool inverse)
+        private static ModInt[] ConvolutionNaive(ModInt[] a, ModInt[] b, int resultLength)
         {
-            int len = 1 << l;
-            if (len == 1)
+            var result = new ModInt[resultLength];
+            if (a.Length < b.Length)
             {
-                return a;
+                for (int j = 0; j < b.Length; j++)
+                    for (int i = 0; i < a.Length; i++)
+                        result[i + j] += a[i] * b[j];
             }
-
-            ModInt[] a0 = new ModInt[len / 2];
-            ModInt[] a1 = new ModInt[len / 2];
-
-            for (int i = 0; i < len / 2; i++)
+            else
             {
-                a0[i] = a[i * 2];
-                a1[i] = a[i * 2 + 1];
-            }
-
-            ModInt[] hatF0 = Transform(a0, l - 1, inverse);
-            ModInt[] hatF1 = Transform(a1, l - 1, inverse);
-
-            ModInt zetaN = inverse ? InvZ[l] : Z[l];
-
-            ModInt[] result = new ModInt[len];
-            ModInt zetaNi = 1;
-            for (int i = 0; i < len; i++)
-            {
-                result[i] = hatF0[i % (len / 2)] + zetaNi * hatF1[i % (len / 2)];
-                zetaNi *= zetaN;
+                for (int i = 0; i < a.Length; i++)
+                    for (int j = 0; j < b.Length; j++)
+                        result[i + j] += a[i] * b[j];
             }
 
             return result;
         }
 
-        /// <summary>
-        /// a,bからc[k]=Σ(a[i]*b[k-i])を求める
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static double[] Convolution(double[] a, double[] b)
+        public static void Transform(ModInt[] values, bool inverse)
         {
-            int n = 1;
-            while (n < (a.Length + b.Length))
+            int n = values.Length;
+            for (int i = 1, j = 0; i < n; i++)
             {
-                n *= 2;
+                int bit = n >> 1;
+                for (; (j & bit) != 0; bit >>= 1)
+                    j ^= bit;
+                j ^= bit;
+                if (i < j)
+                    (values[i], values[j]) = (values[j], values[i]);
             }
 
-            var compA = new Complex[n];
-            for (int i = 0; i < a.Length; i++)
+            for (int length = 2; length <= n; length <<= 1)
             {
-                compA[i] = new Complex(a[i], 0);
-            }
+                ModInt root = ModInt.Pow(PrimitiveRoot, (ModInt.Mod - 1) / length);
+                if (inverse) root = ModInt.Inverse(root);
+                int halfLength = length >> 1;
 
-            var compB = new Complex[n];
-            for (int i = 0; i < b.Length; i++)
-            {
-                compB[i] = new Complex(b[i], 0);
-            }
-
-            Complex[] hatG = Transform(compA);
-            Complex[] hatH = Transform(compB);
-            Complex[] hatF = new Complex[n];
-            for (int i = 0; i < n; i++)
-            {
-                hatF[i] = hatG[i] * hatH[i];
-            }
-
-            Complex[] nF = Transform(hatF, true);
-
-            double[] f = new double[n];
-            for (int i = 0; i < n; i++)
-            {
-                f[i] = nF[i].Real / n;
-            }
-
-            return f;
-        }
-
-        public static Complex[] DiscreteFourierTransform(Complex[] a, bool inverse = false)
-        {
-            int n = 1;
-            while (n < a.Length)
-            {
-                n *= 2;
-            }
-
-            Complex[] aa = new Complex[n];
-            for (int i = 0; i < a.Length; i++)
-            {
-                aa[i] = a[i];
-            }
-
-            return Transform(aa, inverse);
-        }
-
-        // f(x) = Σa_i*x^i の離散フーリエ変換
-        // deg(f)は2羃
-        private static Complex[] Transform(Complex[] a, bool inverse = false)
-        {
-            int n = a.Length;
-            if (n == 1)
-            {
-                return a;
-            }
-
-            Complex[] a0 = new Complex[n / 2];
-            Complex[] a1 = new Complex[n / 2];
-            for (int i = 0; i < n / 2; i++)
-            {
-                a0[i] = a[2 * i];
-                a1[i] = a[2 * i + 1];
-            }
-
-            Complex[] hatF0 = Transform(a0, inverse);
-            Complex[] hatF1 = Transform(a1, inverse);
-
-            // ζ_n
-            Complex zetaN = Zeta(inverse ? -n : n);
-
-            var result = new Complex[n];
-
-            // ζ_n^i
-            Complex zetaNi = 1;
-            for (int i = 0; i < n; i++)
-            {
-                result[i] = hatF0[i % (n / 2)] + zetaNi * hatF1[i % (n / 2)];
-                zetaNi *= zetaN;
-            }
-
-            return result;
-        }
-
-        private static Complex Zeta(int n)
-        {
-            double rad = 2 * Math.PI / n;
-            double re = Math.Cos(rad);
-            double im = Math.Sin(rad);
-            return new Complex(re, im);
-        }
-
-        public struct ModInt
-        {
-            private const long Mod1 = (1L << 27) * 15 + 1;
-            private const long Mod2 = (1L << 26) * 27 + 1;
-            public long Num1 { get; private set; }
-            public long Num2 { get; private set; }
-
-            public long Num
-            {
-                get
+                for (int start = 0; start < n; start += length)
                 {
-                    long pq;
-                    return EMath.ChaineseRemainderTheorem(Num1, Mod1, Num2, Mod2, out pq);
+                    ModInt factor = 1;
+                    for (int i = 0; i < halfLength; i++)
+                    {
+                        ModInt even = values[start + i];
+                        ModInt odd = values[start + i + halfLength] * factor;
+                        values[start + i] = even + odd;
+                        values[start + i + halfLength] = even - odd;
+                        factor *= root;
+                    }
                 }
             }
 
+        
+        }
+    }   
+}
+
+ namespace CompLib.Mathematics
+    {
+        #region ModInt
+
+        /// <summary>
+        /// [0,<see cref="Mod"/>) までの値を取るような数
+        /// </summary>
+        public struct ModInt
+        {
+            /// <summary>
+            /// 剰余を取る値．
+            /// </summary>
+            // public const long Mod = (int)1e9 + 7;
+            public const long Mod = 998244353;
+
+            /// <summary>
+            /// 実際の数値．
+            /// </summary>
+            public long num;
+
+            /// <summary>
+            /// 値が <paramref name="n"/> であるようなインスタンスを構築します．
+            /// </summary>
+            /// <param name="n">インスタンスが持つ値</param>
+            /// <remarks>パフォーマンスの問題上，コンストラクタ内では剰余を取りません．そのため，<paramref name="n"/> ∈ [0,<see cref="Mod"/>) を満たすような <paramref name="n"/> を渡してください．このコンストラクタは O(1) で実行されます．</remarks>
             public ModInt(long n)
             {
-                Num1 = n % Mod1;
-                Num2 = n % Mod2;
+                num = n;
             }
 
-            public ModInt(long n, long m)
+            /// <summary>
+            /// このインスタンスの数値を文字列に変換します．
+            /// </summary>
+            /// <returns>[0,<see cref="Mod"/>) の範囲内の整数を 10 進表記したもの．</returns>
+            public override string ToString()
             {
-                Num1 = n % Mod1;
-                Num2 = m % Mod2;
+                return num.ToString();
+            }
+
+            public static ModInt operator +(ModInt l, ModInt r)
+            {
+                l.num += r.num;
+                if (l.num >= Mod) l.num -= Mod;
+                return l;
+            }
+
+            public static ModInt operator -(ModInt l, ModInt r)
+            {
+                l.num -= r.num;
+                if (l.num < 0) l.num += Mod;
+                return l;
+            }
+
+            public static ModInt operator *(ModInt l, ModInt r)
+            {
+                return new ModInt(l.num * r.num % Mod);
             }
 
             public static implicit operator ModInt(long n)
             {
+                n %= Mod;
+                if (n < 0) n += Mod;
                 return new ModInt(n);
             }
 
-            public static ModInt operator *(ModInt a, ModInt b)
+            /// <summary>
+            /// 与えられた 2 つの数値からべき剰余を計算します．
+            /// </summary>
+            /// <param name="v">べき乗の底</param>
+            /// <param name="k">べき指数</param>
+            /// <returns>繰り返し二乗法により O(N log N) で実行されます．</returns>
+            public static ModInt Pow(ModInt v, long k)
             {
-                return new ModInt(a.Num1 * b.Num1, a.Num2 * b.Num2);
+                return Pow(v.num, k);
             }
 
-            public static ModInt operator +(ModInt a, ModInt b)
+            /// <summary>
+            /// 与えられた 2 つの数値からべき剰余を計算します．
+            /// </summary>
+            /// <param name="v">べき乗の底</param>
+            /// <param name="k">べき指数</param>
+            /// <returns>繰り返し二乗法により O(N log N) で実行されます．</returns>
+            public static ModInt Pow(long v, long k)
             {
-                return new ModInt(a.Num1 + b.Num1, a.Num2 + b.Num2);
+                long ret = 1;
+                if (Mod == 998244353 || Mod == (long)1e9 + 7) k %= Mod - 1;
+                for (; k > 0; k >>= 1, v = v * v % Mod)
+                    if ((k & 1) == 1)
+                        ret = ret * v % Mod;
+                return new ModInt(ret);
             }
 
-            public static ModInt Pow(ModInt a, long b)
+            /// <summary>
+            /// 与えられた数の逆元を計算します．
+            /// </summary>
+            /// <param name="v">逆元を取る対象となる数</param>
+            /// <returns>逆元となるような値</returns>
+            /// <remarks>法が素数であることを仮定して，フェルマーの小定理に従って逆元を O(log N) で計算します．</remarks>
+            public static ModInt Inverse(ModInt v)
             {
-                ModInt result = 1;
-                while (b > 0)
-                {
-                    if (b % 2 == 1)
-                    {
-                        result *= a;
-                    }
-
-                    a *= a;
-                    b /= 2;
-                }
-
-                return result;
-            }
-
-            public static ModInt Inverse(int n)
-            {
-                long t1 = n;
-                long num1 = 1;
-                long b1 = Mod1 - 2;
-                while (b1 > 0)
-                {
-                    if (b1 % 2 == 1)
-                    {
-                        num1 *= t1;
-                        num1 %= Mod1;
-                    }
-
-                    t1 *= t1;
-                    t1 %= Mod1;
-                    b1 /= 2;
-                }
-
-                long t2 = n;
-                long num2 = 1;
-                long b2 = Mod2 - 2;
-                while (b2 > 0)
-                {
-                    if (b2 % 2 == 1)
-                    {
-                        num2 *= t2;
-                        num2 %= Mod2;
-                    }
-
-                    t2 *= t2;
-                    t2 %= Mod2;
-                    b2 /= 2;
-                }
-
-                return new ModInt(num1, num2);
+                return Pow(v, Mod - 2);
             }
         }
+
+        #endregion
+
+        #region Binomial Coefficient
+
+        public class BinomialCoefficient
+        {
+            public ModInt[] fact, ifact;
+
+            public BinomialCoefficient(int n)
+            {
+                fact = new ModInt[n + 1];
+                ifact = new ModInt[n + 1];
+                fact[0] = 1;
+                for (int i = 1; i <= n; i++)
+                    fact[i] = fact[i - 1] * i;
+                ifact[n] = ModInt.Inverse(fact[n]);
+                for (int i = n - 1; i >= 0; i--)
+                    ifact[i] = ifact[i + 1] * (i + 1);
+                ifact[0] = ifact[1];
+            }
+
+            public ModInt this[int n, int r]
+            {
+                get
+                {
+                    if (n >= 0)
+                    {
+                        if (!(0 <= r && r <= n)) return 0;
+                        return fact[n] * ifact[n - r] * ifact[r];
+                    }
+                    else
+                    {
+                        if (!(0 <= r)) throw new ArgumentOutOfRangeException();
+                        return (r % 2 == 0 ? 1 : -1) * this[-n + r - 1, r];
+                    }
+                }
+            }
+
+            public ModInt RepeatedCombination(int n, int k)
+            {
+                if (k == 0) return 1;
+                return this[n + k - 1, k];
+            }
+        }
+
+        #endregion
     }
-}
