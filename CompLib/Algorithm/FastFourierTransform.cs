@@ -1,5 +1,3 @@
-
-
 namespace CompLib.Algorithm
 {
     using System;
@@ -115,8 +113,9 @@ namespace CompLib.Algorithm
     }   
 }
 
- namespace CompLib.Mathematics
-    {
+namespace CompLib.Mathematics
+{
+    using System;
         #region ModInt
 
         /// <summary>
@@ -265,4 +264,4 @@ namespace CompLib.Algorithm
         }
 
         #endregion
-    }
+}
