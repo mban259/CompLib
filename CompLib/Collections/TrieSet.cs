@@ -1,6 +1,8 @@
 namespace CompLib.Collections
 {
     using Num = System.Int32;
+    using System.Collections.Generic;
+    using System;
 
     class TrieSet
     {
