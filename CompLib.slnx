@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="CompLib/CompLib.csproj" />
+  <Project Path="UnitTest/UnitTest.csproj" />
+</Solution>
